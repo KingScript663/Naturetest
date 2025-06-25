@@ -817,8 +817,16 @@ local parry = mold:AddToggle({
                     local One_Target = One_Ball:GetAttribute('target')
 
                     local Velocity = Zoomies.VectorVelocity
+                    local Speed = Velocity.Magnitude
 
-                    local Distance = (Player.Character.PrimaryPart.Position - Ball.Position).Magnitude
+-- Bù ping bằng cách dự đoán vị trí bóng trong tương lai gần
+                    local Ping = game:GetService('Stats').Network.ServerStatsItem['Data Ping']:GetValue()
+                    local Delay_Compensate = Ping * 0.001 -- chuyển ping ms sang giây
+                    local Predict_Distance = Velocity.Unit * Speed * Delay_Compensate
+                    local Predicted_Position = Ball.Position + Predict_Distance
+
+-- Tính khoảng cách từ nhân vật đến vị trí bóng đã dự đoán
+                    local Distance = (Player.Character.PrimaryPart.Position - Predicted_Position).Magnitude
 
                     local Ping = game:GetService('Stats').Network.ServerStatsItem['Data Ping']:GetValue()
 
