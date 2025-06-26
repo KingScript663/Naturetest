@@ -3110,6 +3110,65 @@ stat:AddToggle({
 	end
 })
 
+local plat = misc:AddSection({
+	Name = "Platform",
+	Position = "right",
+});
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local rootPart = character:WaitForChild("HumanoidRootPart")
+
+local platform = nil
+local connection = nil
+
+--toggle platform 
+plat:AddToggle({
+	Name = "Platform",
+	Callback = function(value)
+		if value then
+			-- Tạo sàn
+			local fixedY = rootPart.Position.Y + 100
+
+			platform = Instance.new("Part")
+			platform.Size = Vector3.new(50, 1, 50)
+			platform.Anchored = true
+			platform.CanCollide = true
+			platform.Transparency = 1
+			platform.Material = Enum.Material.ForceField
+			platform.Name = "MovingPlatform"
+			platform.Parent = workspace
+
+			-- Di chuyển sàn theo người chơi (XZ), Y cố định
+			connection = RunService.RenderStepped:Connect(function()
+				if rootPart and platform then
+					local pos = rootPart.Position
+					platform.Position = Vector3.new(pos.X, fixedY, pos.Z)
+				end
+			end)
+
+			-- Đưa người chơi lên sàn
+			task.wait(0.5)
+			rootPart.CFrame = CFrame.new(Vector3.new(rootPart.Position.X, fixedY + 5, rootPart.Position.Z))
+
+		else
+			-- Xoá sàn và ngừng theo dõi
+			if connection then
+				connection:Disconnect()
+				connection = nil
+			end
+
+			if platform then
+				platform:Destroy()
+				platform = nil
+			end
+		end
+	end
+})
+
 local i1 = info:AddSection({
 	Name = "Owner",
 	Position = "left",
