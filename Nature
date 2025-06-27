@@ -1,3 +1,29 @@
+local gui = Instance.new("ScreenGui", game.Players.LocalPlayer:WaitForChild("PlayerGui"))
+gui.ResetOnSpawn = false
+
+local btn = Instance.new("TextButton", gui)
+btn.Size = UDim2.new(0, 50, 0, 50)
+btn.Position = UDim2.new(0, 10, 0, 10) -- Góc trái, cách mép 10px
+btn.BackgroundColor3 = Color3.fromRGB(10, 10, 50)
+btn.BackgroundTransparency = 0.3
+btn.BorderColor3 = Color3.fromRGB(0, 0, 0)
+btn.BorderSizePixel = 1
+btn.Text = "N"
+btn.TextColor3 = Color3.fromRGB(88, 131, 202)
+btn.TextScaled = true
+btn.Font = Enum.Font.Garamond
+btn.AutoButtonColor = false
+btn.Active = true
+btn.Draggable = true
+
+Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+
+btn.MouseButton1Click:Connect(function()
+	game:GetService("VirtualInputManager"):SendKeyEvent(true, Enum.KeyCode.LeftControl, false, game)
+	task.wait(0.1)
+	game:GetService("VirtualInputManager"):SendKeyEvent(false, Enum.KeyCode.LeftControl, false, game)
+end)
+
 local ContextActionService = game:GetService('ContextActionService')
 local Phantom = false
 
@@ -771,15 +797,11 @@ local visu = Window:DrawTab({
 	Icon = "eye"
 })
 
-local misc = Window:DrawTab({
+local m = Window:DrawTab({
 	Name = "Misc",
 	Icon = "layers"
 })
 
-local info = Window:DrawTab({
-	Name = "Credits",
-	Icon = "info"
-})
 -- Toggle 
 local mold = Blatant:AddSection({
 	Name = "Auto Parry",
@@ -2891,7 +2913,7 @@ Visua:AddToggle({
 	end
 })
 
-local jump = misc:AddSection({
+local jump = m:AddSection({
 	Name = "Auto Jump",
 	Position = "left",
 });
@@ -2923,7 +2945,7 @@ jump:AddToggle({
 	end
 })
 
-local fps = misc:AddSection({
+local fps = m:AddSection({
 	Name = "FPS Boost",
 	Position = "right",
 });
@@ -3029,7 +3051,7 @@ fps:AddToggle({
 	}
 })
 
-local stat = misc:AddSection({
+local stat = m:AddSection({
 	Name = "Ball Stats",
 	Position = "left",
 });
@@ -3110,137 +3132,121 @@ stat:AddToggle({
 	end
 })
 
-local plat = misc:AddSection({
-	Name = "Platform",
+local autoplay = m:AddSection({
+	Name = "Auto Play",
 	Position = "right",
 });
 
-local Players = game:GetService("Players")
+local VirtualInputManager = game:GetService("VirtualInputManager")
 local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
 
 local player = Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-local rootPart = character:WaitForChild("HumanoidRootPart")
+local rootPart = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
 
-local platform = nil
-local connection = nil
+local targetDistance = 30
+local autoPlayConnection = nil
+local lastTargetTime = 0
+local targetDuration = 0
 
---toggle platform 
-plat:AddToggle({
-	Name = "Platform",
+autoplay:AddSlider({
+	Name = "Distance From Ball",
+	Min = 10,
+	Max = 100,
+	Default = 30,
 	Callback = function(value)
-		if value then
-			-- Tạo sàn
-			local fixedY = rootPart.Position.Y + 100
+		targetDistance = value
+	end
+})
 
-			platform = Instance.new("Part")
-			platform.Size = Vector3.new(50, 1, 50)
-			platform.Anchored = true
-			platform.CanCollide = true
-			platform.Transparency = 1
-			platform.Material = Enum.Material.ForceField
-			platform.Name = "MovingPlatform"
-			platform.Parent = workspace
+autoplay:AddToggle({
+	Name = "Auto Play",
+	Callback = function(enabled)
+		if enabled then
+			autoPlayConnection = RunService.RenderStepped:Connect(function()
+				if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
+				rootPart = player.Character.HumanoidRootPart
 
-			-- Di chuyển sàn theo người chơi (XZ), Y cố định
-			connection = RunService.RenderStepped:Connect(function()
-				if rootPart and platform then
-					local pos = rootPart.Position
-					platform.Position = Vector3.new(pos.X, fixedY, pos.Z)
+				-- Tìm bóng thật
+				local ball
+				for _, b in ipairs(workspace:WaitForChild("Balls"):GetChildren()) do
+					if b:GetAttribute("realBall") then
+						ball = b
+						break
+					end
+				end
+				if not ball then return end
+
+				local dir = (ball.Position - rootPart.Position).Unit
+				local dist = (ball.Position - rootPart.Position).Magnitude
+				local speed = ball.Velocity.Magnitude
+				local currentTime = tick()
+				local ballTarget = ball:GetAttribute("target")
+
+				-- Kiểm tra target liên tục
+				if ballTarget == player.Name then
+					if currentTime - lastTargetTime < 0.2 then
+						targetDuration += RunService.RenderStepped:Wait()
+					else
+						targetDuration = 0
+					end
+					lastTargetTime = currentTime
+				else
+					targetDuration = 0
+				end
+
+				-- Reset tất cả nút
+				for _, key in pairs({"W", "A", "S", "D"}) do
+					VirtualInputManager:SendKeyEvent(false, key, false, game)
+				end
+
+				-- Nếu bị target liên tục hoặc bóng quá gần → luôn lùi
+				if dist < targetDistance or targetDuration > 0.5 then
+					local backDir = -dir
+					local backPos = rootPart.Position + backDir * 6
+
+					-- Kiểm tra player khác phía sau
+					local safeToBack = true
+					for _, other in ipairs(Players:GetPlayers()) do
+						if other ~= player and other.Character and other.Character:FindFirstChild("HumanoidRootPart") then
+							local otherHRP = other.Character.HumanoidRootPart
+							if (otherHRP.Position - backPos).Magnitude < 5 then
+								safeToBack = false
+								break
+							end
+						end
+					end
+
+					if safeToBack then
+						VirtualInputManager:SendKeyEvent(true, "S", false, game)
+					else
+						-- Né sang bên nếu bị vướng
+						local sideKey = math.random(1, 2) == 1 and "A" or "D"
+						VirtualInputManager:SendKeyEvent(true, sideKey, false, game)
+					end
+
+					return -- ❗ Dừng tại đây, không xử lý di chuyển khác
+				end
+
+				-- Nếu đang xa hơn targetDistance + buffer → tiến tới để giữ vị trí tốt
+				local buffer = 5
+				if dist > targetDistance + buffer then
+					VirtualInputManager:SendKeyEvent(true, "W", false, game)
+				elseif speed > 120 then
+					local dodgeKey = math.random(1, 2) == 1 and "A" or "D"
+					VirtualInputManager:SendKeyEvent(true, dodgeKey, false, game)
+				elseif math.random() < 0.01 then
+					VirtualInputManager:SendKeyEvent(true, "W", false, game)
 				end
 			end)
-
-			-- Đưa người chơi lên sàn
-			task.wait(0.5)
-			rootPart.CFrame = CFrame.new(Vector3.new(rootPart.Position.X, fixedY + 5, rootPart.Position.Z))
-
 		else
-			-- Xoá sàn và ngừng theo dõi
-			if connection then
-				connection:Disconnect()
-				connection = nil
+			if autoPlayConnection then
+				autoPlayConnection:Disconnect()
+				autoPlayConnection = nil
 			end
-
-			if platform then
-				platform:Destroy()
-				platform = nil
+			for _, key in pairs({"W", "A", "S", "D"}) do
+				VirtualInputManager:SendKeyEvent(false, key, false, game)
 			end
 		end
 	end
 })
-
-local i1 = info:AddSection({
-	Name = "Owner",
-	Position = "left",
-});
-
-i1:AddParagraph({
-	Name = "👑Owner",
-	Content = "KingScript"
-})
-
-local i2 = info:AddSection({
-	Name = "Manual Spam UI Creator",
-	Position = "right",
-});
-
-i2:AddParagraph({
-	Name = "💻Manual Spam UI Creator",
-	Content = "Alicia"
-})
-
-local i3 = info:AddSection({
-	Name = "KeySystem UI Creator",
-	Position = "left",
-});
-
-i3:AddParagraph({
-	Name = "💻KeySystem UI Creator",
-	Content = "Alicia"
-})
-
-local i4 = info:AddSection({
-	Name = "Main UI Creator",
-	Position = "right",
-});
-
-i4:AddParagraph({
-	Name = "💻Main UI Creator",
-	Content = "Alicia"
-})
-
-local i5 = info:AddSection({
-	Name = "Toggle On/Off Creator",
-	Position = "left",
-});
-
-i5:AddParagraph({
-	Name = "💻Toggle On/Off Creator",
-	Content = "Alicia"
-})
-
-local gui = Instance.new("ScreenGui", game.Players.LocalPlayer:WaitForChild("PlayerGui"))
-gui.ResetOnSpawn = false
-
-local btn = Instance.new("TextButton", gui)
-btn.Size = UDim2.new(0, 50, 0, 50)
-btn.Position = UDim2.new(0, 10, 0, 10) -- Góc trái, cách mép 10px
-btn.BackgroundColor3 = Color3.fromRGB(10, 10, 50)
-btn.BackgroundTransparency = 0.3
-btn.BorderColor3 = Color3.fromRGB(0, 0, 0)
-btn.BorderSizePixel = 1
-btn.Text = "N"
-btn.TextColor3 = Color3.fromRGB(88, 131, 202)
-btn.TextScaled = true
-btn.Font = Enum.Font.Garamond
-btn.AutoButtonColor = false
-btn.Active = true
-btn.Draggable = true
-
-Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
-
-btn.MouseButton1Click:Connect(function()
-	game:GetService("VirtualInputManager"):SendKeyEvent(true, Enum.KeyCode.LeftControl, false, game)
-	task.wait(0.1)
-	game:GetService("VirtualInputManager"):SendKeyEvent(false, Enum.KeyCode.LeftControl, false, game)
-end)
