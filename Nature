@@ -842,7 +842,7 @@ local parry = mold:AddToggle({
 
                     local Distance = (Player.Character.PrimaryPart.Position - Ball.Position).Magnitude
 
-                    local Ping = game:GetService('Stats').Network.ServerStatsItem['Data Ping']:GetValue() / 10
+                    local Ping = game:GetService('Stats').Network.ServerStatsItem['Data Ping']:GetValue()
 
                     local Ping_Threshold = math.clamp(Ping / 10, 18.5, 70)
 
@@ -2959,13 +2959,14 @@ local fb = fps:AddToggle({
 		local terrain = workspace:FindFirstChildOfClass("Terrain")
 
 		if value then
-			-- Lưu cài đặt cũ (nếu cần khôi phục)
+			-- Lưu lại cấu hình Lighting & Terrain
 			originalSettings = {
 				Ambient = lighting.Ambient,
 				Brightness = lighting.Brightness,
 				GlobalShadows = lighting.GlobalShadows,
 				FogEnd = lighting.FogEnd,
 				FogStart = lighting.FogStart,
+				Technology = lighting.Technology,
 				WaterWaveSize = terrain and terrain.WaterWaveSize or nil,
 				WaterReflectance = terrain and terrain.WaterReflectance or nil,
 			}
@@ -2976,6 +2977,7 @@ local fb = fps:AddToggle({
 			lighting.GlobalShadows = false
 			lighting.FogStart = 0
 			lighting.FogEnd = 999999
+			pcall(function() lighting.Technology = Enum.Technology.Compatibility end)
 
 			-- Tối ưu Terrain
 			if terrain then
@@ -2983,20 +2985,27 @@ local fb = fps:AddToggle({
 				terrain.WaterReflectance = 0
 			end
 
-			-- Giảm detail Particles
+			-- Xoá và tắt các đối tượng gây lag
 			for _, obj in ipairs(workspace:GetDescendants()) do
-				if obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Beam") then
+				if obj:IsA("Texture") or obj:IsA("Decal") or obj:IsA("SurfaceAppearance") then
+					pcall(function() obj:Destroy() end)
+				elseif obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Beam") then
 					obj.Enabled = false
+				elseif obj:IsA("ShirtGraphic") or obj:IsA("Shirt") or obj:IsA("Pants") then
+					pcall(function() obj:Destroy() end)
+				elseif obj:IsA("SpecialMesh") or obj:IsA("FileMesh") or obj:IsA("MeshPart") then
+					pcall(function() obj.TextureID = "" end)
 				end
 			end
 		else
-			-- Khôi phục lại
+			-- Khôi phục lại Lighting & Terrain
 			if originalSettings then
 				lighting.Ambient = originalSettings.Ambient
 				lighting.Brightness = originalSettings.Brightness
 				lighting.GlobalShadows = originalSettings.GlobalShadows
 				lighting.FogStart = originalSettings.FogStart
 				lighting.FogEnd = originalSettings.FogEnd
+				pcall(function() lighting.Technology = originalSettings.Technology end)
 
 				if terrain then
 					terrain.WaterWaveSize = originalSettings.WaterWaveSize
@@ -3004,7 +3013,7 @@ local fb = fps:AddToggle({
 				end
 			end
 
-			-- Bật lại các particle nếu cần
+			-- Bật lại particle (không thể khôi phục texture đã xoá)
 			for _, obj in ipairs(workspace:GetDescendants()) do
 				if obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Beam") then
 					obj.Enabled = true
