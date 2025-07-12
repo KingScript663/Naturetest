@@ -1,29 +1,3 @@
-local gui = Instance.new("ScreenGui", game.Players.LocalPlayer:WaitForChild("PlayerGui"))
-gui.ResetOnSpawn = false
-
-local btn = Instance.new("TextButton", gui)
-btn.Size = UDim2.new(0, 50, 0, 50)
-btn.Position = UDim2.new(0, 10, 0, 10) -- Góc trái, cách mép 10px
-btn.BackgroundColor3 = Color3.fromRGB(10, 10, 50)
-btn.BackgroundTransparency = 0.3
-btn.BorderColor3 = Color3.fromRGB(0, 0, 0)
-btn.BorderSizePixel = 1
-btn.Text = "N"
-btn.TextColor3 = Color3.fromRGB(88, 131, 202)
-btn.TextScaled = true
-btn.Font = Enum.Font.Garamond
-btn.AutoButtonColor = false
-btn.Active = true
-btn.Draggable = true
-
-Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
-
-btn.MouseButton1Click:Connect(function()
-	game:GetService("VirtualInputManager"):SendKeyEvent(true, Enum.KeyCode.LeftControl, false, game)
-	task.wait(0.1)
-	game:GetService("VirtualInputManager"):SendKeyEvent(false, Enum.KeyCode.LeftControl, false, game)
-end)
-
 local ContextActionService = game:GetService('ContextActionService')
 local Phantom = false
 
@@ -768,50 +742,24 @@ local function AutoAbility()
     return false
 end
 
-local Airflow = loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/KingScript663/AirFlow/refs/heads/main/source.luau"))();
-
-local Window = Airflow:Init({
-	Name = "🌿Nature",
-	Keybind = "LeftControl",
-	Logo = "",
-});
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/KingScript663/gg/refs/heads/main/yyy"))()
+local UI = Library.new()
+UI:load()
 
 -- Tab
-local Blatant = Window:DrawTab({
-	Name = "Blatant",
-	Icon = "sword"
-})
-
-local Detection= Window:DrawTab({
-	Name = "Detections",
-	Icon = "layers"
-})
-
-local play = Window:DrawTab({
-	Name = "Player",
-	Icon = "user"
-})
-
-local visu = Window:DrawTab({
-	Name = "Visuals",
-	Icon = "eye"
-})
-
-local m = Window:DrawTab({
-	Name = "Misc",
-	Icon = "layers"
-})
-
--- Toggle 
-local mold = Blatant:AddSection({
-	Name = "Auto Parry",
-	Position = "left",
-});
-
-local parry = mold:AddToggle({
-	Name = "Auto Parry",
-	Callback = function(value)
-        if value then
+local BlatantTab = UI:create_tab("Blatant", "rbxassetid://76499042599127")
+local DetTab = UI:create_tab("Detection", "rbxassetid://10723424838")
+local PlayerTab = UI:create_tab("Player", "rbxassetid://126017907477623")
+local WorldTab = UI:create_tab("World", "rbxassetid://7733964126")
+local MicTab = UI:create_tab("Misc", "rbxassetid://10723424838")
+-- Blatant Tab
+local AutoParryModule = BlatantTab:create_module({
+    title = "Auto Parry",
+    description = "Automatically Parries Ball",
+    section = "left",
+    flag = "auto_parry",
+    callback = function(value)
+       if value then
             Connections_Manager['Auto Parry'] = RunService.PreSimulation:Connect(function()
                 local One_Ball = Auto_Parry.Get_Ball()
                 local Balls = Auto_Parry.Get_Balls()
@@ -861,7 +809,7 @@ local parry = mold:AddToggle({
                     end
 
                     local speed_divisor = speed_divisor_base * effectiveMultiplier
-                    local Parry_Accuracy = Ping_Threshold + math.max(Speed / speed_divisor, 9.5)
+                    local Parry_Accuracy = Ping_Threshold + math.max(Speed / 2.3, 9.5)
 
                     local Curved = Auto_Parry.Is_Curved()
 
@@ -988,87 +936,82 @@ local parryTypeMap = {
     ["Random Target"] = "RandomTarget"
 }
 
-parry:AutomaticVisible({
-	Target = true,
-	Elements = {
-		mold:AddDropdown({
-	Name = "First Parry Type",
-	Values = {
-        'F_Key',
-        'Left_Click',
-        'Navigation'
-    },
-	Multi = false,
-	Default = "F_Key",
-	Callback = function(value)
-	       FirstParryType = value
+AutoParryModule:create_dropdown({
+    title = "FirstParryType",
+    flag = "first_parry_type",
+    options = {"F_Key", "Left_Click", "Navigation"},
+    maximum_options = 3,
+    multi_dropdown = false,
+    callback = function(value)
+        firstParryType = value
     end
-    }),
-    mold:AddDropdown({
-	Name = "Curve Type",
-	Values = {
-        "Camera",
-        "Random",
-        "Backwards",
-        'Straight',
-        'High',
-        'Left',
-        'Right',
-        'Random Target'
-    },
-	Multi = false,
-	Default = "Camera",
-	Callback = function(value)
-        Selected_Parry_Type = parryTypeMap[value] or value
-    end
-}),
-mold:AddSlider({
-	Name = "Parry Accuracy",
-	Min = 1,
-	Max = 100,
-	Default = 100, -- optional, defaults to Min if not set
-	Callback = function(value)
-		Speed_Divisor_Multiplier = 0.7 + (value - 1) * (0.35 / 99)
-	end
-	}),
-	mold:AddParagraph({
-	Name = "",
-	Content = "_________________________________________"
-}),
-	mold:AddToggle({
-	Name = "Randomized Parry Accuracy",
-	Callback = function(value) 
-        getgenv().RandomParryAccuracyEnabled = value      
-    end
-    }),
-    mold:AddToggle({
-	Name = "Auto Ability",
-	Callback = function(value)       
-    end
-    }),
-    mold:AddToggle({
-	Name = "Keypress",
-	Callback = function(value)
-        getgenv().AutoParryKeypress = value
-    end
-    }),
-    mold:AddToggle({
-	Name = "Notify",
-	Callback = function(value)       
-    end
-		})
-	}
 })
 
-local Triggerbot = Blatant:AddSection({
-	Name = "Triggerbot",
-	Position = "left",
-});
+AutoParryModule:create_dropdown({
+    title = "Curve Type",
+    flag = "curve_type",
+    options = {"Camera", "Random", "Backwards", "Straight", "High", "Left", "Right", "Random Target"},
+    maximum_options = 8,
+    multi_dropdown = false,
+    callback = function(value)
+       Selected_Parry_Type = parryTypeMap[value] or value
+    end
+})
 
-local Trigger = Triggerbot:AddToggle({
-    Name = "Triggerbot",
-    Callback = function(value)
-        if value then
+AutoParryModule:create_slider({
+    title = "Parry Accuracy",
+    flag = "parry_accuracy",
+    minimum_value = 1,
+    maximum_value = 100,
+    value = 100,
+    round_number = true,
+    callback = function(value)
+	end
+})
+
+AutoParryModule:create_divider({
+    showtopic = true,
+    title = "",
+    disableline = false
+})
+
+AutoParryModule:create_checkbox({
+    title = "Randomized Parry Accuracy",
+    flag = "random_parry_accuracy",
+    callback = function(value)
+       getgenv().RandomParryAccuracyEnabled = value      
+    end
+})
+
+AutoParryModule:create_checkbox({
+    title = "Auto Ability",
+    flag = "auto_ability",
+    callback = function(value)
+     end
+})
+
+AutoParryModule:create_checkbox({
+    title = "Keypress",
+    flag = "keypress1",
+    callback = function(value)
+        getgenv().AutoParryKeypress = value
+    end
+})
+
+AutoParryModule:create_checkbox({
+    title = "Notify",
+    flag = "notify1",
+    callback = function(state)
+     end
+})
+
+local TriggerModule = BlatantTab:create_module({
+    title = "Triggerbot",
+    description = "Instantly Hits Ball When Targeted",
+    section = "left",
+    flag = "trigger_bot",
+    callback = function(value)
+       if value then
             Connections_Manager['Triggerbot'] = RunService.PreSimulation:Connect(function()
                 local Balls = Auto_Parry.Get_Balls()
     
@@ -1121,36 +1064,28 @@ local Trigger = Triggerbot:AddToggle({
     end
 })
 
-Trigger:AutomaticVisible({
-	Target = true,
-	Elements = {
-	    Triggerbot:AddParagraph({
-	Name = "",
-	Content = "_________________________________________"
-}),
-Triggerbot:AddToggle({
-    Name = "Keypress",
-    Callback = function(value)
+TriggerModule:create_checkbox({
+    title = "Keypress",
+    flag = "keypress2",
+    callback = function(value)
         getgenv().TriggerbotKeypress = value
     end
-}),
-Triggerbot:AddToggle({
-    Name = "Notify",
-    Callback = function(value)
-    end
-		})
-	}
 })
 
-local spam = Blatant:AddSection({
-	Name = "Auto Spam Parry",
-	Position = "right",
-});
+TriggerModule:create_checkbox({
+    title = "Notify",
+    flag = "notify2",
+    callback = function(state)
+     end
+})
 
-local spa = spam:AddToggle({
-	Name = "Auto Spam Parry",
-	Callback = function(value)
-        if value then
+local AutoSpamModule = BlatantTab:create_module({
+    title = "Auto Spam Parry",
+    description = "Automatically Spam Parries Ball",
+    section = "right",
+    flag = "auto_spam",
+    callback = function(value)
+       if value then
             Connections_Manager['Auto Spam'] = RunService.PreSimulation:Connect(function()
                 local Ball = Auto_Parry.Get_Ball()
 
@@ -1228,41 +1163,44 @@ local spa = spam:AddToggle({
     end
 })
 
-spa:AutomaticVisible({
-	Target = true,
-	Elements = {
-	    spam:AddDropdown({
-	Name = "Parry Type",
-	Values = {
-        'Legit',
-        'Blatant'
-    },
-	Multi = false,
-	Default = "Legit",
-	Callback = function(value)
-    end
-}),
-spam:AddParagraph({
-	Name = "Recommended:",
-	Content = "Parry Type: Blatant"
-}),
-spam:AddSlider({
-	Name = "Parry Threshold",
-	Min = 1,
-	Max = 3,
-	Default = 1, -- optional, defaults to Min if not set
-	Callback = function(value)
-		ParryThreshold = value
+AutoSpamModule:create_dropdown({
+    title = "Parry Type",
+    flag = "spam_method",
+    options = {"Legit", "Blatant"},
+    maximum_options = 2,
+    multi_dropdown = false,
+    callback = function(value)
+     end
+})
+
+AutoSpamModule:create_paragraph({
+  title = "Recommended:",
+  text = "Parry Type: Blatant"
+})
+
+AutoSpamModule:create_slider({
+    title = "Spam Threshold",
+    flag = "spam_threshould",
+    minimum_value = 1,
+    maximum_value = 3,
+    value = 2.5,
+    round_number = false,
+    callback = function(value)
+       ParryThreshold = value
 	end
-}),
-spam:AddParagraph({
-	Name = "",
-	Content = "_________________________________________"
-}),
-spam:AddToggle({
-        Name = "Animation Fix",
-        Callback = function(value)
-            if value then
+})
+
+AutoSpamModule:create_divider({
+    showtopic = true,
+    title = "",
+    disableline = false
+})
+
+AutoSpamModule:create_checkbox({
+    title = "Animation Fix",
+    flag = "animation_fix",
+    callback = function(value)
+        if value then
                 Connections_Manager['Animation Fix'] = RunService.PreSimulation:Connect(function()
                     local Ball = Auto_Parry.Get_Ball()
 
@@ -1334,30 +1272,71 @@ spam:AddToggle({
                 end
             end
         end
-    }),
-spam:AddToggle({
-    Name = "Keypress",
-    Callback = function(value)
-        getgenv().SpamParryKeypress = value
-    end
-}),
-spam:AddToggle({
-    Name = "Notify",
-    Callback = function(value)
-    end
-		})
-	}
 })
 
-local ManualSpam= Blatant:AddSection({
-	Name = "Manual Spam Parry",
-	Position = "right",
-});
+AutoSpamModule:create_checkbox({
+    title = "Keypress",
+    flag = "keypress3",
+    callback = function(value)
+        getgenv().SpamParryKeypress = value
+    end
+})
 
-local mspa = ManualSpam:AddToggle({
-	Name = "Manual Spam Parry",
-	Callback = function(value)
-        getgenv().spamui = value
+AutoSpamModule:create_checkbox({
+    title = "Notify",
+    flag = "notify3",
+    callback = function(state)
+     end
+})
+
+local ManualSpamModule = BlatantTab:create_module({
+    title = "Manual Spam Parry",
+    description = "Manually Spams Parry",
+    section = "right",
+    flag = "manually_spams",
+    callback = function(value)
+        if value then
+            Connections_Manager['Manual Spam'] = RunService.PreSimulation:Connect(function()
+                if getgenv().spamui then
+                    return
+                end
+
+                if getgenv().ManualSpamKeypress then
+                    VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, game) 
+                else
+                    Auto_Parry.Parry(Selected_Parry_Type)
+                end
+
+            end)
+        else
+            if Connections_Manager['Manual Spam'] then
+                Connections_Manager['Manual Spam']:Disconnect()
+                Connections_Manager['Manual Spam'] = nil
+            end
+        end
+    end
+})
+
+ManualSpamModule:create_checkbox({
+    title = "Keypress",
+    flag = "keypress4",
+    callback = function(value)
+       getgenv().ManualSpamKeypress = value
+    end
+})
+
+ManualSpamModule:create_checkbox({
+    title = "Notify",
+    flag = "notify4",
+    callback = function(state)
+     end
+})
+
+ManualSpamModule:create_checkbox({
+    title = "UI",
+    flag = "u_i",
+    callback = function(value)
+       getgenv().spamui = value
 
         if value then
             local gui = Instance.new("ScreenGui")
@@ -1401,9 +1380,9 @@ local mspa = ManualSpam:AddToggle({
 
             local function toggle()
                 activated = not activated
-                button.Text = activated and "Stop" or "Clash Mode"
+                button.Text = activated and "Stopped" or "Clash Mode"
                 if activated then
-                    Connections_Manager['Manual Spam UI'] = game:GetService("RunService").RenderStepped:Connect(function()
+                    Connections_Manager['Manual Spam UI'] = game:GetService("RunService").Heartbeat:Connect(function()
                         Auto_Parry.Parry(Selected_Parry_Type)
                     end)
                 else
@@ -1426,160 +1405,62 @@ local mspa = ManualSpam:AddToggle({
             end
         end
     end
-    })
-    
-mspa:AutomaticVisible({
-	Target = true,
-	Elements = {
-	    ManualSpam:AddParagraph({
-	Name = "",
-	Content = "_________________________________________"
-}),
-ManualSpam:AddToggle({
-    Name = "Keypress",
-    Callback = function(value)
-        getgenv().ManualSpamKeypress = value
-    end
-}),
-ManualSpam:AddToggle({
-    Name = "Notify",
-    Callback = function(value)
-    end
-		})
-	}
 })
 
--- Ability Detection Position
-local detect = Detection:AddSection({
-	Name = "Ability Detection",
-	Position = "left",
-});
+local lastTargetBall = nil
+local tpConnection = nil
 
-local detec = Detection:AddSection({
-	Name = "Ability Detection",
-	Position = "right",
-});
+local TpModule = BlatantTab:create_module({
+    title = "Instant Ball TP",
+    description = "Teleport To The Ball And Parry",
+    section = "left",
+    flag = "ball_tp",
+    callback = function(value)
+       if value then
+			tpConnection = RunService.RenderStepped:Connect(function()
+				local function GetBall()
+					for _, Ball in ipairs(workspace:WaitForChild("Balls"):GetChildren()) do
+						if Ball:GetAttribute("realBall") then
+							return Ball
+						end
+					end
+				end
 
-local dete = Detection:AddSection({
-	Name = "Personal Detector",
-	Position = "left",
-});
--- Ability Detection [left]
-detect:AddToggle({
-	Name = "Global Phantom Detection",
-	Callback = function(value)   
-           PhantomV2Detection = value 
-    end
-})
+				local lp = Players.LocalPlayer
+				local char = lp.Character or lp.CharacterAdded:Wait()
+				local hrp = char:FindFirstChild("HumanoidRootPart")
+				if not hrp then return end
 
-detect:AddToggle({
-	Name = "Global Pulse Detection",
-	Callback = function(value)     
-    end
-})
+				local ball = GetBall()
+				if not ball then return end
 
-detect:AddToggle({
-	Name = "Global Death Slash Detection",
-	Callback = function(value)     
-    end
-})
-
-detect:AddToggle({
-	Name = "Global Slash Of Fury Detection",
-	Callback = function(value)     
-    end
-})
-
-detect:AddToggle({
-	Name = "Global Aerodynamic Slash Detection",
-	Callback = function(value)     
-    end
-})
-
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-
-local LocalPlayer = Players.LocalPlayer
-local Character, HumanoidRootPart
-
-local MIN_DISTANCE = 20
-local DetectorEnabled = false  -- Trạng thái toggle
-
--- Cập nhật nhân vật
-local function updateCharacter()
-    Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-    HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
-end
-
-updateCharacter()
-LocalPlayer.CharacterAdded:Connect(updateCharacter)
-
--- Luồng phát hiện khoảng cách
-RunService.RenderStepped:Connect(function()
-    if not DetectorEnabled then return end
-    if not HumanoidRootPart then return end
-
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-            local otherHRP = player.Character.HumanoidRootPart
-            local distance = (HumanoidRootPart.Position - otherHRP.Position).Magnitude
-
-            if distance < MIN_DISTANCE then
-                local pushDir = (HumanoidRootPart.Position - otherHRP.Position).Unit
-                HumanoidRootPart.Velocity = pushDir * 50
-            end
-        end
-    end
-end)
-
--- Toggle GUI
-dete:AddToggle({
-	Name = "Personal Detector",
-	Callback = function(value)
-		DetectorEnabled = value
+				local target = ball:GetAttribute("target")
+				if target == lp.Name and lastTargetBall ~= ball then
+					-- TP một lần duy nhất mỗi khi bị target
+					local dir = (ball.Position - hrp.Position).Unit
+					local tpPos = ball.Position - dir * 15
+					hrp.CFrame = CFrame.new(tpPos)
+					lastTargetBall = ball
+				elseif target ~= lp.Name then
+					lastTargetBall = nil
+				end
+			end)
+		else
+			if tpConnection then
+				tpConnection:Disconnect()
+				tpConnection = nil
+			end
+			lastTargetBall = nil
+		end
 	end
 })
--- Ability Detection [right]
-detec:AddToggle({
-	Name = "Global Hellhook Detection",
-	Callback = function(value)     
-    end
-})
 
-detec:AddToggle({
-	Name = "Global Infinity Detection",
-	Callback = function(value)     
-	    getgenv().InfinityDetection = value
-    end
-})
-
-detec:AddToggle({
-	Name = "Global Time Hole Detection",
-	Callback = function(value)     
-    end
-})
-
-detec:AddToggle({
-	Name = "Global Singularity Detection",
-	Callback = function(value)     
-    end
-})
-
-detec:AddToggle({
-	Name = "Global Telekinesis Detection",
-	Callback = function(value)     
-    end
-})
-
--- Lobby AP
-local LobbyAP = Blatant:AddSection({
-	Name = "Lobby AP",
-	Position = "right",
-});
-
-local lobby = LobbyAP:AddToggle({
-    Name = "Lobby AP",
-    Callback = function(value)
+local LobbyModule = BlatantTab:create_module({
+    title = "Lobby AP",
+    description = "Automatically Parries Ball In Lobby",
+    section = "right",
+    flag = "lobby_ap",
+    callback = function(value)
         if value then
             Connections_Manager['Lobby AP'] = RunService.Heartbeat:Connect(function()
                 local Ball = Auto_Parry.Lobby_Balls()
@@ -1640,95 +1521,146 @@ local lobby = LobbyAP:AddToggle({
     end
 })
 
-lobby:AutomaticVisible({
-	Target = true,
-	Elements = {
-	    LobbyAP:AddSlider({
-	Name = "Parry Accuracy",
-	Min = 1,
-	Max = 100,
-	Default = 55,
-	Callback = function(value)
-		LobbyAP_Speed_Divisor_Multiplier = 0.7 + (value - 1) * (0.35 / 99)
+LobbyModule:create_slider({
+    title = "Lobby AP Accuracy",
+    flag = "lobby_ap_accuracy",
+    minimum_value = 1, 
+    maximum_value = 100,
+    value = 100,
+    round_number = true,
+    callback = function(value)
+       LobbyAP_Speed_Divisor_Multiplier = 0.7 + (value - 1) * (0.35 / 99)
 	end
-}),
-LobbyAP:AddParagraph({
-	Name = "",
-	Content = "_________________________________________"
-}),
-LobbyAP:AddToggle({
-    Name = "Keypress",
-    Callback = function(value)
+})
+
+LobbyModule:create_divider({
+    showtopic = true,
+    title = "",
+    disableline = false
+})
+
+LobbyModule:create_checkbox({
+    title = "Randomized Lobby Parry Accuracy",
+    flag = "radom_lobby_parry",
+    callback = function(value)
+        getgenv().LobbyAPRandomParryAccuracyEnabled = value
+    end
+})
+
+LobbyModule:create_checkbox({
+    title = "Keypress",
+    flag = "keypress5",
+    callback = function(value)
         getgenv().LobbyAPKeypress = value
     end
-}),
-LobbyAP:AddToggle({
-    Name = "Notify",
-    Callback = function(value)
+})
+
+LobbyModule:create_checkbox({
+    title = "Notify",
+    flag = "notify5",
+    callback = function(state)
+     end
+})
+
+local Det1Module = DetTab:create_module({
+  title = "Global Phantom Detection",
+  flag = "det1",
+  description = "Anti Phantom",
+  section = "left",
+  callback = function(value)
+      PhantomV2Detection = value 
     end
-		})
-	}
 })
 
-local tp = Blatant:AddSection({
-	Name = "Ball Teleportation",
-	Position = "left",
-});
-
-local lastTargetBall = nil
-local tpConnection = nil
-
-tp:AddToggle({
-	Name = "Instant Ball TP",
-	Callback = function(value)
-		if value then
-			tpConnection = RunService.RenderStepped:Connect(function()
-				local function GetBall()
-					for _, Ball in ipairs(workspace:WaitForChild("Balls"):GetChildren()) do
-						if Ball:GetAttribute("realBall") then
-							return Ball
-						end
-					end
-				end
-
-				local lp = Players.LocalPlayer
-				local char = lp.Character or lp.CharacterAdded:Wait()
-				local hrp = char:FindFirstChild("HumanoidRootPart")
-				if not hrp then return end
-
-				local ball = GetBall()
-				if not ball then return end
-
-				local target = ball:GetAttribute("target")
-				if target == lp.Name and lastTargetBall ~= ball then
-					-- TP một lần duy nhất mỗi khi bị target
-					local dir = (ball.Position - hrp.Position).Unit
-					local tpPos = ball.Position - dir * 15
-					hrp.CFrame = CFrame.new(tpPos)
-					lastTargetBall = ball
-				elseif target ~= lp.Name then
-					lastTargetBall = nil
-				end
-			end)
-		else
-			if tpConnection then
-				tpConnection:Disconnect()
-				tpConnection = nil
-			end
-			lastTargetBall = nil
-		end
-	end
+local Det2Module = DetTab:create_module({
+  title = "Global Pulse Detection",
+  flag = "det2",
+  description = "Anti Pulse",
+  section = "left",
+  callback = function(value)
+   end
 })
 
-local Strafe = play:AddSection({
-	Name = "Speed", 
-	Position = "left",
-});
+local Det3Module = DetTab:create_module({
+  title = "Global Death Slash Detection",
+  flag = "det3",
+  description = "Anti Death Slash",
+  section = "left",
+  callback = function(value)
+   end
+})
+  
+  local Det4Module = DetTab:create_module({
+  title = "Global Slashes Of Fury Detection",
+  flag = "det4",
+  description = "Anti Slashes Of Fury",
+  section = "left",
+  callback = function(value)
+   end
+})
 
-local speed = Strafe:AddToggle({
-    Name = "Speed",
-    Callback = function(value)
-        if value then
+local Det5Module = DetTab:create_module({
+  title = "Global Aerodynamic Slash Detection",
+  flag = "det5",
+  description = "Anti Aerodynamic Slash",
+  section = "left",
+  callback = function(value)
+   end
+})
+
+local Det6Module = DetTab:create_module({
+  title = "Global Hellhook Detection",
+  flag = "det6",
+  description = "Anti Hellhook",
+  section = "right",
+  callback = function(value)
+   end
+})
+
+local Det7Module = DetTab:create_module({
+  title = "Global Infinity Detection",
+  flag = "det7",
+  description = "Anti Infinity",
+  section = "right",
+  callback = function(value)
+      getgenv().InfinityDetection = value
+    end
+})
+
+local Det8Module = DetTab:create_module({
+  title = "Global Time Hole Detection",
+  flag = "det8",
+  description = "Anti Time Hole",
+  section = "right",
+  callback = function(value)
+   end
+})
+
+local Det9Module = DetTab:create_module({
+  title = "Global Singularity Detection",
+  flag = "det9",
+  description = "Anti Singularity",
+  section = "right",
+  callback = function(value)
+   end
+})
+
+local Det10Module = DetTab:create_module({
+  title = "Global Telekinesis Detection",
+  flag = "det10",
+  description = "Anti Telekinesis",
+  section = "right",
+  callback = function(value)
+   end
+})
+
+local SpeedModule = PlayerTab:create_module({
+  title = "Speed",
+  flag = "speed_hack",
+  description = "Increases Player Speed",
+  section = "left",
+  callback = function(value)
+      if value then
             Connections_Manager['Strafe'] = game:GetService("RunService").PreSimulation:Connect(function()
                 local character = game.Players.LocalPlayer.Character
                 if character and character:FindFirstChild("Humanoid") then
@@ -1749,29 +1681,24 @@ local speed = Strafe:AddToggle({
     end
 })
 
-speed:AutomaticVisible({
-	Target = true,
-	Elements = {
-        Strafe:AddSlider({
-	Name = "Strafe Speed",
-    Min = 36,
-	Max = 350,
-	Default = 36,
-	Callback = function(value)
+SpeedModule:create_slider({
+    title = "Strafe Speed",
+    flag = "strafe_speed",
+    minimum_value = 36, 
+    maximum_value = 200,
+    value = 36,
+    round_number = true,
+    callback = function(value)
         StrafeSpeed = value
     end
-		})
-	}
 })
 
-local Spinbot = play:AddSection({
-	Name = "Spinbot",
-	Position = "right",
-});
-
-local spin = Spinbot:AddToggle({
-    Name = "Spinbot",
-    Callback = function(value)
+local SpinModule = PlayerTab:create_module({
+    title = "Spinbot",
+    description = "Spins Player",
+    section = "right",
+    flag = "spin_bot",
+    callback = function(value)
         getgenv().Spinbot = value
         if value then
             getgenv().spin = true
@@ -1810,29 +1737,24 @@ local spin = Spinbot:AddToggle({
     end
 })
 
-spin:AutomaticVisible({
-	Target = true,
-	Elements = {
-	    Spinbot:AddSlider({
-	Name = "Spinbot Speed",
-    Min = 1,
-	Max = 100,
-	Default = 1,
-	Callback = function(value)
+SpinModule:create_slider({
+    title = "Spinbot Speed",
+    flag = "spin_bot_Speed",
+    minimum_value = 1, 
+    maximum_value = 150,
+    value = 1,
+    round_number = true,
+    callback = function(value)
         getgenv().spinSpeed = math.rad(value)
     end
-		})
-	}
 })
 
-local FieldOfView = play:AddSection({
-	Name = "Field of View",
-	Position = "left",
-});
-
-local fov = FieldOfView:AddToggle({
-    Name = "Field of View",
-    Callback = function(value)
+local FovModule = PlayerTab:create_module({
+    title = "Field of View",
+    description = "Changes Camera POV",
+    section = "left",
+    flag = "field_of_view",
+    callback = function(value)
         getgenv().CameraEnabled = value
         local Camera = game:GetService("Workspace").CurrentCamera
 
@@ -1858,206 +1780,100 @@ local fov = FieldOfView:AddToggle({
     end
 })
 
-fov:AutomaticVisible({
-	Target = true,
-	Elements = {
-	    FieldOfView:AddSlider({
-	Name = "Camera FOV",
-    Min = 50,
-	Max = 150,
-	Default = 70,
-	Callback = function(value)
+FovModule:create_slider({
+    title = "Camera FOV",
+    flag = "camera_fov",
+    minimum_value = 50, 
+    maximum_value = 120,
+    value = 70,
+    round_number = true,
+    callback = function(value)
         getgenv().CameraFOV = value
         if getgenv().CameraEnabled then
             game:GetService("Workspace").CurrentCamera.FieldOfView = value
         end
     end
-		})
-	}
 })
 
-local fl = play:AddSection({
-	Name = "Fly",
-	Position = "right",
-});
-
-local player = game.Players.LocalPlayer
-local flying = false
-local arrowGui = nil
-
-local ctrl = {f = 0, b = 0, l = 0, r = 0}
-local lastCtrl = {f = 0, b = 0, l = 0, r = 0}
-local speed = 0
-local humanoidConnection
-
-function notify(msg)
-	game.StarterGui:SetCore("SendNotification", {
-		Title = "Fly Status",
-		Text = msg,
-		Duration = 3
-	})
+-- Khởi tạo danh sách emote từ Animation.storage
+local Emotes_Data = {}
+for emoteName in pairs(Animation.storage) do
+	table.insert(Emotes_Data, emoteName)
 end
+table.sort(Emotes_Data)
 
-function createArrowGui()
-	if arrowGui then arrowGui:Destroy() end
+-- Emote mặc định
+local selected_animation = Emotes_Data[1]
 
-	arrowGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-	arrowGui.Name = "FlyControlGui"
-	arrowGui.ResetOnSpawn = false
+-- Hàm phát emote
+March = March or {}
+March.Play_Anim = function(emoteName)
+	local anim = Animation.storage[emoteName]
+	if not anim then return false end
 
-	local function createButton(name, pos, txt)
-		local btn = Instance.new("TextButton")
-		btn.Name = name
-		btn.Size = UDim2.new(0, 50, 0, 50)
-		btn.Position = pos
-		btn.Text = txt
-		btn.TextScaled = true
-		btn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-		btn.BackgroundTransparency = 0.3
-		btn.TextColor3 = Color3.new(1, 1, 1)
-		btn.Parent = arrowGui
-		return btn
+	local humanoid = Player.Character:FindFirstChildOfClass("Humanoid")
+	if not humanoid then return false end
+
+	local animator = humanoid:FindFirstChildOfClass("Animator")
+	if not animator then return false end
+
+	if Animation.track then
+		Animation.track:Stop()
 	end
 
-	local centerX = 0.1
-	local centerY = 0.65
+	local track = animator:LoadAnimation(anim)
+	Animation.track = track
+	track:Play()
+	Animation.current = emoteName
 
-	local up = createButton("Up", UDim2.new(centerX, 0, centerY - 0.1, 0), "↑")
-	local down = createButton("Down", UDim2.new(centerX, 0, centerY + 0.1, 0), "↓")
-	local left = createButton("Left", UDim2.new(centerX - 0.1, 0, centerY, 0), "←")
-	local right = createButton("Right", UDim2.new(centerX + 0.1, 0, centerY, 0), "→")
-
-	up.MouseButton1Down:Connect(function() ctrl.f = 1 end)
-	up.MouseButton1Up:Connect(function() ctrl.f = 0 end)
-
-	down.MouseButton1Down:Connect(function() ctrl.b = -1 end)
-	down.MouseButton1Up:Connect(function() ctrl.b = 0 end)
-
-	left.MouseButton1Down:Connect(function() ctrl.l = -1 end)
-	left.MouseButton1Up:Connect(function() ctrl.l = 0 end)
-
-	right.MouseButton1Down:Connect(function() ctrl.r = 1 end)
-	right.MouseButton1Up:Connect(function() ctrl.r = 0 end)
+	return true
 end
 
-function Fly()
-	local char = player.Character
-	if not char or not char:FindFirstChild("HumanoidRootPart") then return end
-	local hrp = char.HumanoidRootPart
-	local humanoid = char:FindFirstChildOfClass("Humanoid")
-	if humanoid then
-		humanoid:ChangeState(Enum.HumanoidStateType.Physics)
-	end
+-- Biến điều khiển trạng thái toggle
+local Emotes_Enabled = false
 
-	local bg = Instance.new("BodyGyro")
-	local bv = Instance.new("BodyVelocity")
-	bg.P = 9e4
-	bg.maxTorque = Vector3.new(9e9, 9e9, 9e9)
-	bg.cframe = hrp.CFrame
-	bg.Parent = hrp
+local EmoteModule = PlayerTab:create_module({
+    title = "Emotes",
+    description = "Custom Emotes",
+    section = "right",
+    flag = "emote",
+    callback = function(value)
+        if value then
+            Emotes_Enabled = true
+        else
+            Emotes_Enabled = false
+            if Animation.track then
+                Animation.track:Stop()
+                Animation.track = nil
+                Animation.current = nil
+            end
+        end
+    end
+})
 
-	bv.velocity = Vector3.new(0, 0.1, 0)
-	bv.maxForce = Vector3.new(9e9, 9e9, 9e9)
-	bv.Parent = hrp
-
-	flying = true
-	notify("Fly Turned On✅")
-
-	if humanoidConnection then humanoidConnection:Disconnect() end
-	humanoidConnection = humanoid.Died:Connect(function()
-		Unfly()
-	end)
-
-	coroutine.wrap(function()
-		while flying and player.Character do
-			if ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0 then
-				speed = speed + 0.5 + (speed / 15)
-				if speed > 50 then speed = 50 end
-			elseif speed ~= 0 then
-				speed = speed - 1
-				if speed < 0 then speed = 0 end
-			end
-			if speed ~= 0 then
-				bv.velocity = ((workspace.CurrentCamera.CFrame.lookVector * (ctrl.f + ctrl.b)) +
-					(workspace.CurrentCamera.CFrame.RightVector * (ctrl.r + ctrl.l))) * speed
-				lastCtrl = {f = ctrl.f, b = ctrl.b, l = ctrl.l, r = ctrl.r}
-			else
-				bv.velocity = Vector3.new(0, 0.1, 0)
-			end
-			bg.cframe = workspace.CurrentCamera.CFrame
-			task.wait()
-		end
-		ctrl = {f = 0, b = 0, l = 0, r = 0}
-		lastCtrl = {f = 0, b = 0, l = 0, r = 0}
-		speed = 0
-		bg:Destroy()
-		bv:Destroy()
-		if humanoid then
-			humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-		end
-	end)()
-end
-
-function Unfly()
-	flying = false
-	if arrowGui then
-		arrowGui:Destroy()
-		arrowGui = nil
-	end
-	if humanoidConnection then
-		humanoidConnection:Disconnect()
-	end
-	notify("Fly Turned Off❌")
-end
-
--- ⏺ TOGGLE FLY
-local fly = fl:AddToggle({
-	Name = "Fly",
-	Callback = function(value)
-		if value then
-			Fly()
-		else
-			Unfly()
+EmoteModule:create_dropdown({
+    title = "Selected Emotes",
+    flag = "select_emote",
+    options = Emotes_Data,
+    maximum_options = 10000,
+    multi_dropdown = false,
+    callback = function(value)
+       selected_animation = value
+		if Emotes_Enabled then
+			March.Play_Anim(value)
 		end
 	end
 })
-
-fly:AutomaticVisible({
-	Target = true,
-	Elements = {
-	    fl:AddParagraph({
-	Name = "",
-	Content = "_________________________________________"
-}),
-fl:AddToggle({
-	Name = "UI [For Mobile]",
-	Callback = function(value)
-		if value and flying then
-			createArrowGui()
-		elseif not value and arrowGui then
-			arrowGui:Destroy()
-			arrowGui = nil
-		end
-	end
-}),
-fl:AddParagraph({
-	Name = "⚠️Warning:",
-	Content = "Using Fly Can Get Banned"
-		})
-	}
-})
-
-local PlayerCosmetics = play:AddSection({
-	Name = "Player Cosmetics",
-	Position = "left",
-});
 
 _G.PlayerCosmeticsCleanup = {}
 
-local pc = PlayerCosmetics:AddToggle({
-    Name = "Player Cosmetics",
-    Callback = function(value)
-        local players = game:GetService("Players")
+local CosmeticModule = PlayerTab:create_module({
+    title = "Player Cosmetics",
+    description = "Apply Headless And Korblox",
+    section = "left",
+    flag = "player_cosmetic",
+    callback = function(value)
+       local players = game:GetService("Players")
         local lp = players.LocalPlayer
 
         local function applyKorblox(character)
@@ -2229,20 +2045,161 @@ local pc = PlayerCosmetics:AddToggle({
     end
 })
 
-pc:AutomaticVisible({
-	Target = true,
-	Elements = {
-	    PlayerCosmetics:AddParagraph({
-	Name = "📋Note:",
-	Content = "The Whole Server Can Not See"
-		})
-	}
+local player = game.Players.LocalPlayer
+local flying = false
+local arrowGui = nil
+
+local ctrl = {f = 0, b = 0, l = 0, r = 0}
+local lastCtrl = {f = 0, b = 0, l = 0, r = 0}
+local speed = 0
+local humanoidConnection
+
+function notify(msg)
+	game.StarterGui:SetCore("SendNotification", {
+		Title = "Fly Status",
+		Text = msg,
+		Duration = 3
+	})
+end
+
+function createArrowGui()
+	if arrowGui then arrowGui:Destroy() end
+
+	arrowGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+	arrowGui.Name = "FlyControlGui"
+	arrowGui.ResetOnSpawn = false
+
+	local function createButton(name, pos, txt)
+		local btn = Instance.new("TextButton")
+		btn.Name = name
+		btn.Size = UDim2.new(0, 50, 0, 50)
+		btn.Position = pos
+		btn.Text = txt
+		btn.TextScaled = true
+		btn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+		btn.BackgroundTransparency = 0.3
+		btn.TextColor3 = Color3.new(1, 1, 1)
+		btn.Parent = arrowGui
+		return btn
+	end
+
+	local centerX = 0.1
+	local centerY = 0.65
+
+	local up = createButton("Up", UDim2.new(centerX, 0, centerY - 0.1, 0), "↑")
+	local down = createButton("Down", UDim2.new(centerX, 0, centerY + 0.1, 0), "↓")
+	local left = createButton("Left", UDim2.new(centerX - 0.1, 0, centerY, 0), "←")
+	local right = createButton("Right", UDim2.new(centerX + 0.1, 0, centerY, 0), "→")
+
+	up.MouseButton1Down:Connect(function() ctrl.f = 1 end)
+	up.MouseButton1Up:Connect(function() ctrl.f = 0 end)
+
+	down.MouseButton1Down:Connect(function() ctrl.b = -1 end)
+	down.MouseButton1Up:Connect(function() ctrl.b = 0 end)
+
+	left.MouseButton1Down:Connect(function() ctrl.l = -1 end)
+	left.MouseButton1Up:Connect(function() ctrl.l = 0 end)
+
+	right.MouseButton1Down:Connect(function() ctrl.r = 1 end)
+	right.MouseButton1Up:Connect(function() ctrl.r = 0 end)
+end
+
+function Fly()
+	local char = player.Character
+	if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+	local hrp = char.HumanoidRootPart
+	local humanoid = char:FindFirstChildOfClass("Humanoid")
+	if humanoid then
+		humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+	end
+
+	local bg = Instance.new("BodyGyro")
+	local bv = Instance.new("BodyVelocity")
+	bg.P = 9e4
+	bg.maxTorque = Vector3.new(9e9, 9e9, 9e9)
+	bg.cframe = hrp.CFrame
+	bg.Parent = hrp
+
+	bv.velocity = Vector3.new(0, 0.1, 0)
+	bv.maxForce = Vector3.new(9e9, 9e9, 9e9)
+	bv.Parent = hrp
+
+	flying = true
+	notify("Fly Turned On✅")
+
+	if humanoidConnection then humanoidConnection:Disconnect() end
+	humanoidConnection = humanoid.Died:Connect(function()
+		Unfly()
+	end)
+
+	coroutine.wrap(function()
+		while flying and player.Character do
+			if ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0 then
+				speed = speed + 0.5 + (speed / 15)
+				if speed > 50 then speed = 50 end
+			elseif speed ~= 0 then
+				speed = speed - 1
+				if speed < 0 then speed = 0 end
+			end
+			if speed ~= 0 then
+				bv.velocity = ((workspace.CurrentCamera.CFrame.lookVector * (ctrl.f + ctrl.b)) +
+					(workspace.CurrentCamera.CFrame.RightVector * (ctrl.r + ctrl.l))) * speed
+				lastCtrl = {f = ctrl.f, b = ctrl.b, l = ctrl.l, r = ctrl.r}
+			else
+				bv.velocity = Vector3.new(0, 0.1, 0)
+			end
+			bg.cframe = workspace.CurrentCamera.CFrame
+			task.wait()
+		end
+		ctrl = {f = 0, b = 0, l = 0, r = 0}
+		lastCtrl = {f = 0, b = 0, l = 0, r = 0}
+		speed = 0
+		bg:Destroy()
+		bv:Destroy()
+		if humanoid then
+			humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+		end
+	end)()
+end
+
+function Unfly()
+	flying = false
+	if arrowGui then
+		arrowGui:Destroy()
+		arrowGui = nil
+	end
+	if humanoidConnection then
+		humanoidConnection:Disconnect()
+	end
+	notify("Fly Turned Off❌")
+end
+
+local FlyModule = PlayerTab:create_module({
+    title = "Fly",
+    description = "Allows Players to Fly",
+    section = "right",
+    flag = "fly",
+    callback = function(value)
+        if value then
+			Fly()
+		else
+			Unfly()
+		end
+	end
 })
 
-local noslow = play:AddSection({
-	Name = "No Slow",
-	Position = "right",
-});
+FlyModule:create_checkbox({
+    title = "UI [For Mobile]",
+    flag = "u_i_mobile",
+    callback = function(value)
+        if value and flying then
+			createArrowGui()
+		elseif not value and arrowGui then
+			arrowGui:Destroy()
+			arrowGui = nil
+		end
+	end
+})
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -2316,11 +2273,13 @@ local function disableNoSlow()
 	end
 end
 
--- ⚙️ TÍCH HỢP VÀO TOGGLE
-noslow:AddToggle({
-	Name = "No Slow",
-	Callback = function(value)
-		if value then
+local NoSlowModule = PlayerTab:create_module({
+    title = "No Slow",
+    description = "Players Cannot Be Slowed Down In Any Way",
+    section = "left",
+    flag = "no_slow",
+    callback = function(value)
+       if value then
 			enableNoSlow()
 		else
 			disableNoSlow()
@@ -2328,17 +2287,135 @@ noslow:AddToggle({
 	end
 })
 
-local vi = visu:AddSection({
-	Name = "Ball Trail",
-	Position = "left",
-});
+local Sound_Effect = true
+local sound_effect_type = "DC_15X"
+local CustomId = "" -- Should be set to just the numeric ID, like "1234567890"
+local sound_assets = {
+    DC_15X = 'rbxassetid://936447863',
+    Neverlose = 'rbxassetid://8679627751',
+    Minecraft = 'rbxassetid://8766809464',
+    MinecraftHit2 = 'rbxassetid://8458185621',
+    TeamfortressBonk = 'rbxassetid://8255306220',
+    TeamfortressBell = 'rbxassetid://2868331684',
+    Custom = 'empty'
+}
+local SlashesNet = ReplicatedStorage:WaitForChild("Packages")._Index:FindFirstChild("sleitnick_net@0.1.0")
+local SlashesRemote = SlashesNet and SlashesNet:FindFirstChild("net"):FindFirstChild("RE/SlashesOfFuryActivate")
+local IsSlashesPending = false
+local SlashesParryCount = 0
+local SlashesActive = false
+if SlashesRemote then
+    SlashesRemote.OnClientEvent:Connect(function()
+    if SOFD then
+        IsSlashesPending = true
+    end
+    end)
+end
+
+local HitsoundModule = PlayerTab:create_module({
+    title = "Hit Sounds",
+    description = "Toggles Hit Sounds",
+    section = "right",
+    flag = "hit_sound",
+    callback = function(state)
+       if state then
+	print("[ Debug ] Sound Effect Enabled")
+	Sound_Effect = true
+	Connections_Manager["SoundEffect"] = game.ReplicatedStorage.Remotes.ParrySuccess.OnClientEvent:Connect(function()
+		if not Sound_Effect then return end
+		
+		local sound_id
+		if CustomId ~= "" and sound_effect_type == "Custom" then
+			sound_id = "rbxassetid://" .. CustomId
+		else
+			sound_id = sound_assets[sound_effect_type]
+		end
+		
+		if not sound_id then return end
+		
+		local sound = Instance.new("Sound")
+		sound.SoundId = sound_id
+		sound.Volume = 1
+		sound.PlayOnRemove = true
+		sound.Parent = workspace
+		sound:Destroy()
+	end)
+else
+	print("[ Debug ] Sound Effect Disabled")
+	Sound_Effect = false
+	if Connections_Manager["SoundEffect"] then
+		Connections_Manager["SoundEffect"]:Disconnect()
+		Connections_Manager["SoundEffect"] = nil
+	end
+end
+    end
+})
+
+HitsoundModule:create_dropdown({
+    title = "Sound Type",
+    flag = "sound_effects",
+    options = {"Disabled", "DC_15X", "Minecraft", "MinecraftHit2", "Neverlose", "TeamfortressBonk", "TeamfortressBell"},
+    maximum_options = 14,
+    multi_dropdown = false,
+    callback = function(Option) sound_effect_type = Option end
+})
+
+local rainbowConnection = nil
+local colorCorrection = nil
+local lighting = game:GetService("Lighting")
+
+local FilterModule = WorldTab:create_module({
+    title = "Filter",
+    description = "Toggles Custom World Filter Effects",
+    section = "left",
+    flag = "world_filter",
+    callback = function(value)
+     end
+})
+
+FilterModule:create_checkbox({
+    title = "Enabled Hue",
+    flag = "enable_hue",
+    callback = function(value)
+        if value then
+			if not colorCorrection then
+				colorCorrection = Instance.new("ColorCorrectionEffect")
+				colorCorrection.Name = "RainbowFilter"
+				colorCorrection.Saturation = 1
+				colorCorrection.Contrast = 0.1
+				colorCorrection.Brightness = 0
+				colorCorrection.TintColor = Color3.fromRGB(255, 0, 0)
+				colorCorrection.Parent = lighting
+			end
+
+			local hue = 0
+			rainbowConnection = RunService.RenderStepped:Connect(function()
+				hue = (hue + 1) % 360
+				local color = Color3.fromHSV(hue / 360, 1, 1)
+				colorCorrection.TintColor = color
+			end)
+		else
+			if rainbowConnection then
+				rainbowConnection:Disconnect()
+				rainbowConnection = nil
+			end
+			if colorCorrection then
+				colorCorrection:Destroy()
+				colorCorrection = nil
+			end
+		end
+	end
+})
 
 local trailConnection = nil
 
-vi:AddToggle({
-	Name = "Ball Trail",
-	Callback = function(value)
-		if value then
+local BallTrailModule = WorldTab:create_module({
+    title = "Ball Trail",
+    description = "Add Rainbow Line As The Ball Moves",
+    section = "right",
+    flag = "trial_ball",
+    callback = function(value)
+       if value then
 			trailConnection = RunService.RenderStepped:Connect(function()
 				local function GetBall()
 					for _, Ball in ipairs(workspace:WaitForChild("Balls"):GetChildren()) do
@@ -2404,147 +2481,17 @@ vi:AddToggle({
 	end
 })
 
-local vii = visu:AddSection({
-	Name = "Custom Sky",
-	Position = "right",
-});
-
-local lighting = game:GetService("Lighting")
-
--- Hàm xóa Sky cũ
-local function clearSky()
-	for _, obj in pairs(lighting:GetChildren()) do
-		if obj:IsA("Sky") then
-			obj:Destroy()
-		end
-	end
-end
-
--- Sky: Galaxy Anime
-local function applyGalaxySky()
-	clearSky()
-	local animeSky = Instance.new("Sky")
-	animeSky.Name = "AnimeSky"
-	animeSky.SkyboxBk = "rbxassetid://159454299"
-	animeSky.SkyboxDn = "rbxassetid://159454296"
-	animeSky.SkyboxFt = "rbxassetid://159454293"
-	animeSky.SkyboxLf = "rbxassetid://159454286"
-	animeSky.SkyboxRt = "rbxassetid://159454300"
-	animeSky.SkyboxUp = "rbxassetid://159454288"
-	animeSky.StarCount = 0
-	animeSky.MoonAngularSize = 0
-	animeSky.SunAngularSize = 0
-	animeSky.Parent = lighting
-end
-
--- Sky: Anime hoàng hôn
-local function applyAnimeSky()
-	clearSky()
-	local sunsetSky = Instance.new("Sky")
-	sunsetSky.Name = "SunsetSky"
-	sunsetSky.SkyboxBk = "rbxassetid://271042516"
-	sunsetSky.SkyboxDn = "rbxassetid://271077243"
-	sunsetSky.SkyboxFt = "rbxassetid://271042556"
-	sunsetSky.SkyboxLf = "rbxassetid://271042310"
-	sunsetSky.SkyboxRt = "rbxassetid://271042467"
-	sunsetSky.SkyboxUp = "rbxassetid://271077958"
-	sunsetSky.StarCount = 0
-	sunsetSky.SunAngularSize = 14
-	sunsetSky.MoonAngularSize = 0
-	sunsetSky.Parent = lighting
-end
-
--- Sky: Đêm sao lãng mạn
-local function applyStarNightSky()
-	clearSky()
-	local sky = Instance.new("Sky")
-	sky.Name = "RomanticStarryNight"
-	sky.SkyboxBk = "rbxassetid://6568931476"
-	sky.SkyboxDn = "rbxassetid://6568931025"
-	sky.SkyboxFt = "rbxassetid://6568931476"
-	sky.SkyboxLf = "rbxassetid://6568931476"
-	sky.SkyboxRt = "rbxassetid://6568931476"
-	sky.SkyboxUp = "rbxassetid://6568931731"
-	sky.StarCount = 1500
-	sky.MoonAngularSize = 12
-	sky.SunAngularSize = 0
-	sky.Parent = lighting
-end
-
--- Sky: Lava đỏ cảnh báo
-local function applyLavaSky()
-	clearSky()
-	local sky = Instance.new("Sky")
-	sky.Name = "WarningRedSky"
-	sky.SkyboxBk = "rbxassetid://1012890"
-	sky.SkyboxDn = "rbxassetid://1012891"
-	sky.SkyboxFt = "rbxassetid://1012887"
-	sky.SkyboxLf = "rbxassetid://1012889"
-	sky.SkyboxRt = "rbxassetid://1012888"
-	sky.SkyboxUp = "rbxassetid://1014449"
-	sky.StarCount = 0
-	sky.SunAngularSize = 0
-	sky.MoonAngularSize = 0
-	sky.Parent = lighting
-end
-
--- Toggle trạng thái
-local skyEnabled = false
-
--- GUI
-local sky = vii:AddToggle({
-	Name = "Custom Sky",
-	Callback = function(value)
-		skyEnabled = value
-		if not value then
-			clearSky()
-		end
-	end
-})
-
-sky:AutomaticVisible({
-	Target = true,
-	Elements = {
-vii:AddDropdown({
-	Name = "Sky Type",
-	Values = {
-		"Galaxy",
-		"Pink Sky",
-		"Star Night",
-		"Sunset",
-		"Soon....."
-	},
-	Multi = false,
-	Default = "",
-	Callback = function(value)
-		if not skyEnabled then return end
-		if value == "Galaxy" then
-			applyGalaxySky()
-		elseif value == "Pink Sky" then
-			applyAnimeSky()
-		elseif value == "Star Night" then
-			applyStarNightSky()
-		elseif value == "Sunset" then
-			applyLavaSky()
-		end
-	end
-		})
-	}
-})
-
-local viii = visu:AddSection({
-	Name = "View Ball",
-	Position = "left",
-});
-
 local cam = workspace.CurrentCamera
 local originalSubject = cam.CameraSubject
 local viewConnection = nil
 
-viii:AddToggle({
-	Name = "View Ball",
-	Callback = function(value)
-		if value then
+local ViewBallModule = WorldTab:create_module({
+    title = "View Ball",
+    description = "Switch View From Character To Ball",
+    section = "left",
+    flag = "view_ball",
+    callback = function(value)
+        if value then
 			viewConnection = RunService.RenderStepped:Connect(function()
 				local function GetBall()
 					for _, Ball in ipairs(workspace:WaitForChild("Balls"):GetChildren()) do
@@ -2569,74 +2516,207 @@ viii:AddToggle({
 	end
 })
 
-local viiii = visu:AddSection({
-	Name = "Visualize",
-	Position = "right",
-});
+local abilityESPEnabled = false
+local billboardLabels = {}
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Player = Players.LocalPlayer
+local Connections_Manager = {}
 
-local player = Players.LocalPlayer
-local char = player.Character or player.CharacterAdded:Wait()
-local root = char:WaitForChild("HumanoidRootPart")
-local fieldPart = nil
-local visualizeConnection = nil
+local function createBillboardGui(p)
+    local character = p.Character
+    while not character or not character.Parent do
+        task.wait()
+        character = p.Character
+    end
+    local head = character:WaitForChild("Head")
+    
+    -- Check if BillboardGui already exists for this player
+    local existingGui = billboardLabels[p] and billboardLabels[p].gui
+    if existingGui then
+        existingGui:Destroy() -- Clean up old GUI
+    end
 
-viiii:AddToggle({
-	Name = "Visualize",
-	Callback = function(value)
-		if value then
-			-- Tạo forcefield visual nếu chưa có
-			if not fieldPart then
-				fieldPart = Instance.new("Part")
-				fieldPart.Anchored = true
-				fieldPart.CanCollide = false
-				fieldPart.Transparency = 0.5
-				fieldPart.Shape = Enum.PartType.Ball
-				fieldPart.Material = Enum.Material.ForceField
-				fieldPart.CastShadow = false
-				fieldPart.Color = Color3.fromRGB(88, 131, 202)
-				fieldPart.Name = "VisualField"
-				fieldPart.Parent = workspace
-			end
+    local billboardGui = Instance.new("BillboardGui")
+    billboardGui.Name = "AbilityESP_Billboard"
+    billboardGui.Adornee = head
+    billboardGui.Size = UDim2.new(0, 200, 0, 25)
+    billboardGui.StudsOffset = Vector3.new(0, 3.5, 0)
+    billboardGui.AlwaysOnTop = true
+    billboardGui.Parent = head
 
-			visualizeConnection = RunService.RenderStepped:Connect(function()
-				local function GetBall()
-					for _, Ball in ipairs(workspace:WaitForChild("Balls"):GetChildren()) do
-						if Ball:GetAttribute("realBall") then
-							return Ball
-						end
-					end
-				end
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Size = UDim2.new(1, 0, 1, 0)
+    textLabel.BackgroundTransparency = 1
+    textLabel.Font = Enum.Font.GothamBold
+    textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    textLabel.TextStrokeTransparency = 0.6
+    textLabel.TextSize = 14
+    textLabel.TextXAlignment = Enum.TextXAlignment.Center
+    textLabel.TextYAlignment = Enum.TextYAlignment.Center
+    textLabel.TextWrapped = true
+    textLabel.Parent = billboardGui
+    textLabel.Visible = false -- Start with label hidden
+    textLabel.Text = "" -- Start with no text
 
-				local ball = GetBall()
-				if not ball then return end
+    billboardLabels[p] = {
+        gui = billboardGui,
+        label = textLabel
+    }
 
-				local ballVel = ball.AssemblyLinearVelocity
-				local speed = ballVel.Magnitude
+    local humanoid = character:FindFirstChild("Humanoid")
+    if humanoid then
+        humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
+        -- Connect to humanoid's death to clean up
+        humanoid.Died:Connect(function()
+            textLabel.Visible = false
+            textLabel.Text = ""
+            billboardGui:Destroy() -- Destroy GUI on death
+            billboardLabels[p] = nil -- Remove from tracking
+        end)
+    end
+end
 
-				-- Tính khoảng cách co giãn (clamp từ 25 đến 400)
-				local size = math.clamp(speed, 25, 250)
+-- Handle existing players
+for _, p in Players:GetPlayers() do
+    if p ~= Player then
+        p.CharacterAdded:Connect(function()
+            createBillboardGui(p)
+        end)
+        if p.Character then
+            createBillboardGui(p)
+        end
+    end
+end
 
-				-- Cập nhật field
-				fieldPart.Position = root.Position
-				fieldPart.Size = Vector3.new(size, size, size)
-			end)
-		else
-			if visualizeConnection then
-				visualizeConnection:Disconnect()
-				visualizeConnection = nil
-			end
-			if fieldPart then
-				fieldPart:Destroy()
-				fieldPart = nil
-			end
-		end
-	end
+-- Handle new players
+Players.PlayerAdded:Connect(function(newPlayer)
+    if newPlayer ~= Player then
+        newPlayer.CharacterAdded:Connect(function()
+            createBillboardGui(newPlayer)
+        end)
+    end
+end)
+
+local AbilityModule = WorldTab:create_module({
+    title = "Ability ESP",
+    description = "ESP Ability All Player",
+    section = "right",
+    flag = "esp_ability",
+    callback = function(state)
+        abilityESPEnabled = state
+        print("[ Debug ] Ability ESP " .. (state and "Enabled" or "Disabled"))
+        if state then
+            Connections_Manager["AbilityESP"] = RunService.Heartbeat:Connect(function()
+                for p, data in pairs(billboardLabels) do
+                    local label = data.label
+                    if p.Character and p.Character:FindFirstChild("Head") then
+                        local ability = p:GetAttribute("EquippedAbility")
+                        label.Text = ability and (p.DisplayName .. " [" .. ability .. "]") or p.DisplayName
+                        label.Visible = true
+                    else
+                        label.Visible = false
+                        label.Text = ""
+                    end
+                end
+            end)
+        else
+            if Connections_Manager["AbilityESP"] then
+                Connections_Manager["AbilityESP"]:Disconnect()
+                Connections_Manager["AbilityESP"] = nil
+            end
+            for _, data in pairs(billboardLabels) do
+                local label = data.label
+                label.Visible = false
+                label.Text = "" -- Clear the text content
+            end
+        end
+    end
 })
 
-local lookat = visu:AddSection({
-	Name = "Lookat Ball",
-	Position = "left",
-});
+local selectedSky = "Default"
+local skyen = false
+local function applySkybox(presetName)
+if not skyen then return end
+    local skyPresets = {
+        Default = {"591058823", "591059876", "591058104", "591057861", "591057625", "591059642"},
+        Vaporwave = {"1417494030", "1417494146", "1417494253", "1417494402", "1417494499", "1417494643"},
+        Redshift = {"401664839", "401664862", "401664960", "401664881", "401664901", "401664936"},
+        Desert = {"1013852", "1013853", "1013850", "1013851", "1013849", "1013854"},
+        DaBaby = {"7245418472", "7245418472", "7245418472", "7245418472", "7245418472", "7245418472"},
+        Minecraft = {"1876545003", "1876544331", "1876542941", "1876543392", "1876543764", "1876544642"},
+        SpongeBob = {"7633178166", "7633178166", "7633178166", "7633178166", "7633178166", "7633178166"},
+        Skibidi = {"14952256113", "14952256113", "14952256113", "14952256113", "14952256113", "14952256113"},
+        Blaze = {"150939022", "150939038", "150939047", "150939056", "150939063", "150939082"},
+        ["Pussy Cat"] = {"11154422902", "11154422902", "11154422902", "11154422902", "11154422902", "11154422902"},
+        ["Among Us"] = {"5752463190", "5752463190", "5752463190", "5752463190", "5752463190", "5752463190"},
+        ["Space Wave"] = {"16262356578", "16262358026", "16262360469", "16262362003", "16262363873", "16262366016"},
+        ["Space Wave2"] = {"1233158420", "1233158838", "1233157105", "1233157640", "1233157995", "1233159158"},
+        ["Turquoise Wave"] = {"47974894", "47974690", "47974821", "47974776", "47974859", "47974909"},
+        ["Dark Night"] = {"6285719338", "6285721078", "6285722964", "6285724682", "6285726335", "6285730635"},
+        ["Bright Pink"] = {"271042516", "271077243", "271042556", "271042310", "271042467", "271077958"},
+        ["White Galaxy"] = {"5540798456", "5540799894", "5540801779", "5540801192", "5540799108", "5540800635"},
+        ["Blue Galaxy"] = {"14961495673", "14961494492", "14961492844", "14961491298", "14961490439", "14961489508"}
+    }
+
+    local skyboxData = skyPresets[presetName]
+    if not skyboxData then
+        warn("Unknown sky preset: " .. tostring(presetName))
+        return
+    end
+
+    local Lighting = game:GetService("Lighting")
+    local Sky = Lighting:FindFirstChildOfClass("Sky") or Instance.new("Sky", Lighting)
+    local faces = {"SkyboxBk", "SkyboxDn", "SkyboxFt", "SkyboxLf", "SkyboxRt", "SkyboxUp"}
+
+    for i, face in ipairs(faces) do
+        Sky[face] = "rbxassetid://" .. skyboxData[i]
+    end
+
+    Lighting.GlobalShadows = not skyen -- Disable shadows only when sky is enabled
+end
+
+local SkyModule = WorldTab:create_module({
+    title = "Custom Sky",
+    description = "Changes Sky",
+    section = "left",
+    flag = "change_sky",
+    callback = function(state)
+        local Lighting = game:GetService("Lighting")
+        local Sky = Lighting:FindFirstChildOfClass("Sky")
+
+        if state then
+            print("[ Debug ] Custom Sky Enabled")
+            skyen = true
+            if not Sky then
+                Sky = Instance.new("Sky", Lighting)
+            end
+            while task.wait(1) and state do
+            applySkybox(selectedSky)
+            end
+        else
+            print("[ Debug ] Custom Sky Disabled")
+            if Sky then
+                Sky:Destroy() -- Remove the skybox entirely when disabled
+            end
+            skyen = false
+            Lighting.GlobalShadows = true -- Restore default lighting settings
+        end
+    end
+})
+
+SkyModule:create_dropdown({
+    title = "Selected Sky",
+    flag = "select_sky",
+    options = {"Default", "Vaporwave", "Redshift", "Desert", "DaBaby", "Minecraft", "SpongeBob", "Skibidi", "Blaze", "Pussy Cat", "Among Us", "Space Wave", "Space Wave2", "Turquoise Wave", "Dark Night", "Bright Pink", "White Galaxy", "Blue Galaxy"},
+    maximum_options = 18,
+    multi_dropdown = false,
+    callback = function(option)
+        selectedSky = option
+        print("[ Debug ] Selected Sky: " .. option)
+        applySkybox(option) -- Apply the skybox immediately
+    end
+})
 
 local RunService = game:GetService("RunService")  
 local Players = game:GetService("Players")  
@@ -2687,12 +2767,14 @@ local function DisableLookAt()
 	if playerConn then playerConn:Disconnect() playerConn = nil end  
 	if cameraConn then cameraConn:Disconnect() cameraConn = nil end  
 end  
-  
--- Toggle   
-local look = lookat:AddToggle({  
-	Name = "Lookat Ball",  
-	Callback = function(value)  
-		lookAtBallToggle = value  
+
+local LookatModule = WorldTab:create_module({
+    title = "Lookat Ball",
+    description = "Look The Ball",
+    section = "right",
+    flag = "look_ball",
+    callback = function(value)
+        lookAtBallToggle = value  
 		if value then  
 			EnableLookAt()  
 		else  
@@ -2700,451 +2782,117 @@ local look = lookat:AddToggle({
 		end  
 	end  
 })  
-  
-look:AutomaticVisible({  
-	Target = true,  
-	Elements = {  
-	    lookat:AddParagraph({
-	Name = "",
-	Content = "_________________________________________"
-}),
-lookat:AddDropdown({  
-	     Name = "Look Type",  
-			Values = {  
-				"Camera",  
-				"Character"  
-			},  
-			Multi = false,  
-			Default = "Camera",  
-			Callback = function(value)  
-				parryLookType = value  
+
+LookatModule:create_dropdown({
+    title = "Look Type",
+    flag = "look_type",
+    options = {"Camera", "Character"},
+    maximum_options = 2,
+    multi_dropdown = false,
+    callback = function(value)
+        parryLookType = value  
 				if lookAtBallToggle then  
 					DisableLookAt()  
 					EnableLookAt()  
 				end  
 			end  
-		})  
-	}  
 })
 
-local Visuals = visu:AddSection({
-	Name = "Player Trail",
-	Position = "right",
-});
+local enabled = false
+local swordName = ""
+local p = game:GetService("Players").LocalPlayer
+local rs = game:GetService("ReplicatedStorage")
+local swords = require(rs:WaitForChild("Shared", 9e9):WaitForChild("ReplicatedInstances", 9e9):WaitForChild("Swords", 9e9))
+local ctrl, playFx, lastParry = nil, nil, 0
+local function getSlash(name)
+    local s = swords:GetSword(name)
+    return (s and s.SlashName) or "SlashEffect"
+end
+local function setSword()
+    if not enabled then return end
+    setupvalue(rawget(swords, "EquipSwordTo"), 2, false)
+    swords:EquipSwordTo(p.Character, swordName)
+    ctrl:SetSword(swordName)
+end
+updateSword = function()
+    setSword()
+end
+while task.wait() and not ctrl do
+    for _, v in getconnections(rs.Remotes.FireSwordInfo.OnClientEvent) do
+        if v.Function and islclosure(v.Function) then
+            local u = getupvalues(v.Function)
+            if #u == 1 and type(u[1]) == "table" then
+                ctrl = u[1]
+                break
+            end
+        end
+    end
+end
+local parryConnA, parryConnB
+while task.wait() and not parryConnA do
+    for _, v in getconnections(rs.Remotes.ParrySuccessAll.OnClientEvent) do
+        if v.Function and getinfo(v.Function).name == "parrySuccessAll" then
+            parryConnA, playFx = v, v.Function
+            v:Disable()
+            break
+        end
+    end
+end
+while task.wait() and not parryConnB do
+    for _, v in getconnections(rs.Remotes.ParrySuccessClient.Event) do
+        if v.Function and getinfo(v.Function).name == "parrySuccessAll" then
+            parryConnB = v
+            v:Disable()
+            break
+        end
+    end
+end
+rs.Remotes.ParrySuccessAll.OnClientEvent:Connect(function(...)
+    setthreadidentity(2)
+    local args = {...}
+    if tostring(args[4]) ~= p.Name then
+        lastParry = tick()
+    elseif enabled then
+        args[1] = getSlash(swordName)
+        args[3] = swordName
+    end
+    return playFx(unpack(args))
+end)
+task.spawn(function()
+    while task.wait(1) do
+        if enabled and swordName ~= "" then
+            local c = p.Character or p.CharacterAdded:Wait()
+            if p:GetAttribute("CurrentlyEquippedSword") ~= swordName or not c:FindFirstChild(swordName) then
+                setSword()
+            end
+            for _, m in pairs(c:GetChildren()) do
+                if m:IsA("Model") and m.Name ~= swordName then
+                    m:Destroy()
+                end
+                task.wait()
+            end
+        end
+    end
+end)
 
-local speedTrail = nil
-local speedConnection = nil
-
-Visuals:AddToggle({
-	Name = "Player Trail",
-	Callback = function(value)
-		if value then
-			speedConnection = RunService.RenderStepped:Connect(function()
-				local lp = Players.LocalPlayer
-				local char = lp.Character or lp.CharacterAdded:Wait()
-				local hrp = char:FindFirstChild("HumanoidRootPart")
-				if not hrp then return end
-
-				local speed = hrp.Velocity.Magnitude
-
-				-- Nếu chạy đủ nhanh thì bật trail
-				if speed > 20 then
-					if not speedTrail then
-						local at0 = Instance.new("Attachment", hrp)
-						local at1 = Instance.new("Attachment", hrp)
-						at0.Position = Vector3.new(0, 0.5, 0)
-						at1.Position = Vector3.new(0, -0.5, 0)
-
-						speedTrail = Instance.new("Trail")
-						speedTrail.Attachment0 = at0
-						speedTrail.Attachment1 = at1
-						speedTrail.Lifetime = 0.2
-						speedTrail.Transparency = NumberSequence.new(0.2)
-						speedTrail.WidthScale = NumberSequence.new(1.5)
-						speedTrail.Color = ColorSequence.new(Color3.fromRGB(0, 255, 255), Color3.fromRGB(255, 255, 255))
-						speedTrail.LightEmission = 1
-						speedTrail.Name = "SpeedLineTrail"
-						speedTrail.Parent = hrp
-					end
-				else
-					-- Tắt trail nếu không đủ nhanh
-					if speedTrail then
-						for _, v in ipairs(hrp:GetChildren()) do
-							if v:IsA("Attachment") then v:Destroy() end
-						end
-						speedTrail:Destroy()
-						speedTrail = nil
-					end
-				end
-			end)
-		else
-			if speedConnection then
-				speedConnection:Disconnect()
-				speedConnection = nil
-			end
-			if speedTrail then
-				local hrp = Players.LocalPlayer.Character and Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-				if hrp then
-					for _, v in ipairs(hrp:GetChildren()) do
-						if v:IsA("Attachment") then v:Destroy() end
-					end
-				end
-				speedTrail:Destroy()
-				speedTrail = nil
-			end
-		end
+local SkinChangerModule = MicTab:create_module({
+    title = "Skin Changer",
+    description = "Change Sword Skin",
+    section = "left",
+    flag = "skin_changer",
+    callback = function(state)
+        enabled = state
 	end
 })
 
-local Visual = visu:AddSection({
-	Name = "Clone",
-	Position = "left",
-});
-
-local mirrorConnection = nil
-
-local mi = Visual:AddToggle({
-	Name = "Mirror Trail",
-	Callback = function(value)
-		if value then
-			mirrorConnection = RunService.RenderStepped:Connect(function()
-				local lp = Players.LocalPlayer
-				local char = lp.Character or lp.CharacterAdded:Wait()
-				local hrp = char:FindFirstChild("HumanoidRootPart")
-				if not hrp then return end
-
-				local speed = hrp.Velocity.Magnitude
-				if speed > 20 then
-					local clone = char:Clone()
-					for _, v in pairs(clone:GetDescendants()) do
-						if v:IsA("BasePart") then
-							v.Anchored = true
-							v.CanCollide = false
-							v.Transparency = 0.5
-						elseif v:IsA("Humanoid") then
-							v:Destroy()
-						end
-					end
-					clone.Name = "MirrorClone"
-					clone.Parent = workspace
-
-					-- Đặt đúng vị trí hiện tại
-					for _, part in pairs(clone:GetChildren()) do
-						if part:IsA("BasePart") and char:FindFirstChild(part.Name) then
-							part.CFrame = char[part.Name].CFrame
-						end
-					end
-
-					-- Xoá clone sau 0.5s mờ dần
-					task.delay(0.05, function()
-						for _, part in pairs(clone:GetDescendants()) do
-							if part:IsA("BasePart") then
-								part.Transparency = 1
-							end
-						end
-						clone:Destroy()
-					end)
-				end
-			end)
-		else
-			if mirrorConnection then
-				mirrorConnection:Disconnect()
-				mirrorConnection = nil
-			end
-			-- Xoá mọi clone còn lại
-			for _, v in ipairs(workspace:GetChildren()) do
-				if v.Name == "MirrorClone" then
-					v:Destroy()
-				end
-			end
-		end
+SkinChangerModule:create_textbox({
+    title = "↓ Skin Name [Case Sensitive] ↓",
+    placeholder = "Enter Sword Name...",
+    flag = "skin_input",
+    callback = function(value)
+        swordName = value
 	end
 })
-
-mi:AutomaticVisible({
-	Target = true,
-	Elements = {
-	    Visual:AddParagraph({
-	Name = "🐞Bug:",
-	Content = "there is a little bug, i will fix it later"
-		})
-	}
-})
-
-local Visua = visu:AddSection({
-	Name = "Filter",
-	Position = "right",
-});
-
-local rainbowConnection = nil
-local colorCorrection = nil
-local lighting = game:GetService("Lighting")
-
-Visua:AddToggle({
-	Name = "Rainbow Filter",
-	Callback = function(value)
-		if value then
-			if not colorCorrection then
-				colorCorrection = Instance.new("ColorCorrectionEffect")
-				colorCorrection.Name = "RainbowFilter"
-				colorCorrection.Saturation = 1
-				colorCorrection.Contrast = 0.1
-				colorCorrection.Brightness = 0
-				colorCorrection.TintColor = Color3.fromRGB(255, 0, 0)
-				colorCorrection.Parent = lighting
-			end
-
-			local hue = 0
-			rainbowConnection = RunService.RenderStepped:Connect(function()
-				hue = (hue + 1) % 360
-				local color = Color3.fromHSV(hue / 360, 1, 1)
-				colorCorrection.TintColor = color
-			end)
-		else
-			if rainbowConnection then
-				rainbowConnection:Disconnect()
-				rainbowConnection = nil
-			end
-			if colorCorrection then
-				colorCorrection:Destroy()
-				colorCorrection = nil
-			end
-		end
-	end
-})
-
-local jump = m:AddSection({
-	Name = "Auto Jump",
-	Position = "left",
-});
-
-local autoJumpConnection = nil
-
-jump:AddToggle({
-	Name = "Auto Jump",
-	Callback = function(value)
-		if value then
-			autoJumpConnection = RunService.RenderStepped:Connect(function()
-				local lp = Players.LocalPlayer
-				local char = lp.Character or lp.CharacterAdded:Wait()
-				local humanoid = char:FindFirstChildWhichIsA("Humanoid")
-
-				if humanoid and humanoid:GetState() == Enum.HumanoidStateType.Running or humanoid:GetState() == Enum.HumanoidStateType.Freefall then
-					-- Chỉ nhảy nếu đang trên đất hoặc vừa tiếp đất
-					if humanoid.FloorMaterial ~= Enum.Material.Air then
-						humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-					end
-				end
-			end)
-		else
-			if autoJumpConnection then
-				autoJumpConnection:Disconnect()
-				autoJumpConnection = nil
-			end
-		end
-	end
-})
-
-local fps = m:AddSection({
-	Name = "FPS Boost",
-	Position = "right",
-});
-
-local originalSettings = {}
-
-local fb = fps:AddToggle({
-	Name = "FPS Boost",
-	Callback = function(value)
-		local lighting = game:GetService("Lighting")
-		local terrain = workspace:FindFirstChildOfClass("Terrain")
-
-		if value then
-			-- Lưu lại cấu hình Lighting & Terrain
-			originalSettings = {
-				Ambient = lighting.Ambient,
-				Brightness = lighting.Brightness,
-				GlobalShadows = lighting.GlobalShadows,
-				FogEnd = lighting.FogEnd,
-				FogStart = lighting.FogStart,
-				Technology = lighting.Technology,
-				WaterWaveSize = terrain and terrain.WaterWaveSize or nil,
-				WaterReflectance = terrain and terrain.WaterReflectance or nil,
-			}
-
-			-- Tối ưu Lighting
-			lighting.Ambient = Color3.fromRGB(80, 80, 80)
-			lighting.Brightness = 1
-			lighting.GlobalShadows = false
-			lighting.FogStart = 0
-			lighting.FogEnd = 999999
-			pcall(function() lighting.Technology = Enum.Technology.Compatibility end)
-
-			-- Tối ưu Terrain
-			if terrain then
-				terrain.WaterWaveSize = 0
-				terrain.WaterReflectance = 0
-			end
-
-			-- Xoá và tắt các đối tượng gây lag
-			for _, obj in ipairs(workspace:GetDescendants()) do
-				if obj:IsA("Texture") or obj:IsA("Decal") or obj:IsA("SurfaceAppearance") then
-					pcall(function() obj:Destroy() end)
-				elseif obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Beam") then
-					obj.Enabled = false
-				elseif obj:IsA("ShirtGraphic") or obj:IsA("Shirt") or obj:IsA("Pants") then
-					pcall(function() obj:Destroy() end)
-				elseif obj:IsA("SpecialMesh") or obj:IsA("FileMesh") or obj:IsA("MeshPart") then
-					pcall(function() obj.TextureID = "" end)
-				end
-			end
-		else
-			-- Khôi phục lại Lighting & Terrain
-			if originalSettings then
-				lighting.Ambient = originalSettings.Ambient
-				lighting.Brightness = originalSettings.Brightness
-				lighting.GlobalShadows = originalSettings.GlobalShadows
-				lighting.FogStart = originalSettings.FogStart
-				lighting.FogEnd = originalSettings.FogEnd
-				pcall(function() lighting.Technology = originalSettings.Technology end)
-
-				if terrain then
-					terrain.WaterWaveSize = originalSettings.WaterWaveSize
-					terrain.WaterReflectance = originalSettings.WaterReflectance
-				end
-			end
-
-			-- Bật lại particle (không thể khôi phục texture đã xoá)
-			for _, obj in ipairs(workspace:GetDescendants()) do
-				if obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Beam") then
-					obj.Enabled = true
-				end
-			end
-		end
-	end
-})
-
-local noRenderCache = {}
-
-fb:AutomaticVisible({
-	Target = true,
-	Elements = {
-fps:AddToggle({
-	Name = "No Render",
-	Callback = function(value)
-		if value then
-			for _, obj in ipairs(workspace:GetDescendants()) do
-				if obj:IsA("Texture") or
-				   obj:IsA("Decal") or
-				   obj:IsA("ParticleEmitter") or
-				   obj:IsA("Trail") or
-				   obj:IsA("Beam") or
-				   obj:IsA("SurfaceGui") or
-				   obj:IsA("BillboardGui") or
-				   obj:IsA("Shirt") or
-				   obj:IsA("Pants") or
-				   obj:IsA("ShirtGraphic") or
-				   obj:IsA("Accessory") then
-					noRenderCache[obj] = true
-					obj:Destroy()
-				elseif obj:IsA("SpecialMesh") or obj:IsA("MeshPart") then
-					noRenderCache[obj] = obj.TextureID
-					obj.TextureID = ""
-				end
-			end
-		else
-			-- Không thể khôi phục mấy thứ đã xoá, nhưng có thể cảnh báo
-			warn("⚠️ 'No Render' đã xoá texture và gui, không thể khôi phục hoàn toàn.")
-		end
-	end
-		})
-	}
-})
-
-local stat = m:AddSection({
-	Name = "Ball Stats",
-	Position = "left",
-});
-
-local statsGui = nil
-local statsConnection = nil
-
-stat:AddToggle({
-	Name = "Ball Stats",
-	Callback = function(value)
-		if value then
-			local player = Players.LocalPlayer
-
-			-- Tạo GUI
-			statsGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-			statsGui.Name = "BallStatsUI"
-			statsGui.ResetOnSpawn = false
-
-			local frame = Instance.new("Frame", statsGui)
-			frame.Size = UDim2.new(0, 180, 0, 80)
-			frame.Position = UDim2.new(1, -200, 0, 100)
-			frame.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
-			frame.BackgroundTransparency = 0.2
-			frame.BorderSizePixel = 0
-			frame.Active = true
-			frame.Draggable = true -- 🟢 Cho phép kéo
-
-			local label = Instance.new("TextLabel", frame)
-			label.Size = UDim2.new(1, -10, 1, -10)
-			label.Position = UDim2.new(0, 5, 0, 5)
-			label.BackgroundTransparency = 1
-			label.TextColor3 = Color3.new(1, 1, 1)
-			label.TextScaled = true
-			label.Font = Enum.Font.GothamBold
-			label.TextXAlignment = Enum.TextXAlignment.Left
-			label.TextYAlignment = Enum.TextYAlignment.Top
-			label.Text = "Loading..."
-
-			statsConnection = RunService.RenderStepped:Connect(function()
-				local function GetBall()
-					for _, Ball in ipairs(workspace:WaitForChild("Balls"):GetChildren()) do
-						if Ball:GetAttribute("realBall") then
-							return Ball
-						end
-					end
-				end
-
-				local ball = GetBall()
-				if not ball then
-					label.Text = "No ball found"
-					return
-				end
-
-				local char = player.Character or player.CharacterAdded:Wait()
-				local hrp = char:FindFirstChild("HumanoidRootPart")
-				if not hrp then return end
-
-				local speed = math.floor(ball.Velocity.Magnitude)
-				local distance = math.floor((ball.Position - hrp.Position).Magnitude)
-				local target = ball:GetAttribute("target") or "N/A"
-				local status = speed < 3 and "Idle" or "Flying"
-
-				label.Text = string.format(
-					"⚽ Ball Stats\nSpeed: %s\nDistance: %s\nTarget: %s",
-					speed, distance, target
-				)
-			end)
-		else
-			if statsConnection then
-				statsConnection:Disconnect()
-				statsConnection = nil
-			end
-			if statsGui then
-				statsGui:Destroy()
-				statsGui = nil
-			end
-		end
-	end
-})
-
-local autoplay = m:AddSection({
-	Name = "Auto Play",
-	Position = "right",
-});
 
 local VirtualInputManager = game:GetService("VirtualInputManager")
 local RunService = game:GetService("RunService")
@@ -3158,20 +2906,13 @@ local autoPlayConnection = nil
 local lastTargetTime = 0
 local targetDuration = 0
 
-autoplay:AddSlider({
-	Name = "Distance From Ball",
-	Min = 10,
-	Max = 100,
-	Default = 30,
-	Callback = function(value)
-		targetDistance = value
-	end
-})
-
-autoplay:AddToggle({
-	Name = "Auto Play",
-	Callback = function(enabled)
-		if enabled then
+local AutoPlayModule = MicTab:create_module({
+    title = "Auto Play",
+    description = "Use AI To Play Automatically",
+    section = "right",
+    flag = "auto_play",
+    callback = function(enabled)
+	    if enabled then
 			autoPlayConnection = RunService.RenderStepped:Connect(function()
 				if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
 				rootPart = player.Character.HumanoidRootPart
@@ -3255,6 +2996,274 @@ autoplay:AddToggle({
 			end
 			for _, key in pairs({"W", "A", "S", "D"}) do
 				VirtualInputManager:SendKeyEvent(false, key, false, game)
+			end
+		end
+	end
+})
+
+AutoPlayModule:create_checkbox({
+    title = "Anti AFK",
+    flag = "anti_afk",
+    callback = function(value)
+     end
+})
+
+AutoPlayModule:create_checkbox({
+    title = "Enable Jumping [soon]",
+    flag = "enable_jump",
+    callback = function(state)
+	end
+})
+
+AutoPlayModule:create_checkbox({
+    title = "Notify",
+    flag = "notify5",
+    callback = function(value)
+     end
+})
+
+AutoPlayModule:create_divider({
+    showtopic = true,
+    title = "",
+    disableline = false
+})
+
+AutoPlayModule:create_slider({
+    title = "Distance From Ball",
+    flag = "1",
+    minimum_value = 1,
+    maximum_value = 100,
+    value = 30,
+    round_number = true,
+    callback = function(value)
+     targetDistance = value
+	end
+})
+
+AutoPlayModule:create_slider({
+    title = "Speed Multiplier",
+    flag = "2",
+    minimum_value = 1,
+    maximum_value = 100,
+    value = 70,
+    round_number = true,
+    callback = function(value)
+     end
+})
+
+AutoPlayModule:create_slider({
+    title = "Transversing",
+    flag = "3",
+    minimum_value = 10,
+    maximum_value = 150,
+    value = 25,
+    round_number = true,
+    callback = function(value)
+     end
+})
+
+AutoPlayModule:create_slider({
+    title = "Direction",
+    flag = "4",
+    minimum_value = 0.1,
+    maximum_value = 1,
+    value = 1,
+    round_number = false,
+    callback = function(value)
+     end
+})
+
+AutoPlayModule:create_slider({
+    title = "Offset Factor",
+    flag = "5",
+    minimum_value = 1, 
+    maximum_value = 5,
+    value = 2,
+    round_number = true,
+    callback = function(value)
+     end
+})
+
+AutoPlayModule:create_slider({
+    title = "Movement Duration",
+    flag = "6",
+    minimum_value = 1,
+    maximum_value = 8,
+    value = 6,
+    round_number = true,
+    callback = function(value)
+     end
+})
+
+AutoPlayModule:create_slider({
+    title = "Generation Threshold",
+    flag = "7",
+    minimum_value = 1,
+    maximum_value = 10,
+    value = 2,
+    round_number = true,
+    callback = function(value)
+     end
+})
+
+AutoPlayModule:create_slider({
+    title = "Jump Chance [soon]",
+    flag = "8",
+    minimum_value = 1,
+    maximum_value = 50,
+    value = 50,
+    round_number = true,
+    callback = function(value)
+     end
+})
+
+AutoPlayModule:create_slider({
+    title = "Double Jump Chance [soon]",
+    flag = "9",
+    minimum_value = 1,
+    maximum_value = 50,
+    value = 50,
+    round_number = true,
+    callback = function(value)
+     end
+})
+
+local statsGui = nil
+local statsConnection = nil
+
+local StatModule = MicTab:create_module({
+    title = "Ball Stats",
+    description = "Show Ball Index",
+    section = "left",
+    flag = "ball_stats",
+    callback = function(value)
+        if value then
+			local player = Players.LocalPlayer
+
+			-- Tạo GUI
+			statsGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+			statsGui.Name = "BallStatsUI"
+			statsGui.ResetOnSpawn = false
+
+			local frame = Instance.new("Frame", statsGui)
+			frame.Size = UDim2.new(0, 180, 0, 80)
+			frame.Position = UDim2.new(1, -200, 0, 100)
+			frame.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+			frame.BackgroundTransparency = 0.2
+			frame.BorderSizePixel = 0
+			frame.Active = true
+			frame.Draggable = true -- 🟢 Cho phép kéo
+
+			local label = Instance.new("TextLabel", frame)
+			label.Size = UDim2.new(1, -10, 1, -10)
+			label.Position = UDim2.new(0, 5, 0, 5)
+			label.BackgroundTransparency = 1
+			label.TextColor3 = Color3.new(1, 1, 1)
+			label.TextScaled = true
+			label.Font = Enum.Font.GothamBold
+			label.TextXAlignment = Enum.TextXAlignment.Left
+			label.TextYAlignment = Enum.TextYAlignment.Top
+			label.Text = "Loading..."
+
+			statsConnection = RunService.RenderStepped:Connect(function()
+				local function GetBall()
+					for _, Ball in ipairs(workspace:WaitForChild("Balls"):GetChildren()) do
+						if Ball:GetAttribute("realBall") then
+							return Ball
+						end
+					end
+				end
+
+				local ball = GetBall()
+				if not ball then
+					label.Text = "No ball found"
+					return
+				end
+
+				local char = player.Character or player.CharacterAdded:Wait()
+				local hrp = char:FindFirstChild("HumanoidRootPart")
+				if not hrp then return end
+
+				local speed = math.floor(ball.Velocity.Magnitude)
+				local distance = math.floor((ball.Position - hrp.Position).Magnitude)
+				local target = ball:GetAttribute("target") or "N/A"
+				local status = speed < 3 and "Idle" or "Flying"
+
+				label.Text = string.format(
+					"⚽ Ball Stats\nSpeed: %s\nDistance: %s\nTarget: %s",
+					speed, distance, target
+				)
+			end)
+		else
+			if statsConnection then
+				statsConnection:Disconnect()
+				statsConnection = nil
+			end
+			if statsGui then
+				statsGui:Destroy()
+				statsGui = nil
+			end
+		end
+	end
+})
+
+local player = Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+local root = char:WaitForChild("HumanoidRootPart")
+local fieldPart = nil
+local visualizeConnection = nil
+
+local VisualizeModule = MicTab:create_module({
+    title = "Visualize",
+    description = "Show Visualize",
+    section = "right",
+    flag = "visu_alize",
+    callback = function(value)
+        if value then
+			-- Tạo forcefield visual nếu chưa có
+			if not fieldPart then
+				fieldPart = Instance.new("Part")
+				fieldPart.Anchored = true
+				fieldPart.CanCollide = false
+				fieldPart.Transparency = 0.5
+				fieldPart.Shape = Enum.PartType.Ball
+				fieldPart.Material = Enum.Material.ForceField
+				fieldPart.CastShadow = false
+				fieldPart.Color = Color3.fromRGB(88, 131, 202)
+				fieldPart.Name = "VisualField"
+				fieldPart.Parent = workspace
+			end
+
+			visualizeConnection = RunService.RenderStepped:Connect(function()
+				local function GetBall()
+					for _, Ball in ipairs(workspace:WaitForChild("Balls"):GetChildren()) do
+						if Ball:GetAttribute("realBall") then
+							return Ball
+						end
+					end
+				end
+
+				local ball = GetBall()
+				if not ball then return end
+
+				local ballVel = ball.AssemblyLinearVelocity
+				local speed = ballVel.Magnitude
+
+				-- Tính khoảng cách co giãn (clamp từ 25 đến 400)
+				local size = math.clamp(speed, 25, 250)
+
+				-- Cập nhật field
+				fieldPart.Position = root.Position
+				fieldPart.Size = Vector3.new(size, size, size)
+			end)
+		else
+			if visualizeConnection then
+				visualizeConnection:Disconnect()
+				visualizeConnection = nil
+			end
+			if fieldPart then
+				fieldPart:Destroy()
+				fieldPart = nil
 			end
 		end
 	end
