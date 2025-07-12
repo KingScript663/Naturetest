@@ -809,7 +809,7 @@ local AutoParryModule = BlatantTab:create_module({
                     end
 
                     local speed_divisor = speed_divisor_base * effectiveMultiplier
-                    local Parry_Accuracy = Ping_Threshold + math.max(Speed / 2.3, 9.5)
+                    local Parry_Accuracy = Ping_Threshold + math.max(Speed / 2.7, 9.5)
 
                     local Curved = Auto_Parry.Is_Curved()
 
