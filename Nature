@@ -748,6 +748,7 @@ UI:load()
 
 -- Tab
 local BlatantTab = UI:create_tab("Blatant", "rbxassetid://76499042599127")
+local DetTab = UI:create_tab("Detection", "rbxassetid://10723424838")
 local PlayerTab = UI:create_tab("Player", "rbxassetid://126017907477623")
 local WorldTab = UI:create_tab("World", "rbxassetid://7733964126")
 -- Blatant Tab
@@ -980,35 +981,6 @@ AutoParryModule:create_checkbox({
     callback = function(value)
        getgenv().RandomParryAccuracyEnabled = value      
     end
-})
-
-AutoParryModule:create_checkbox({
-    title = "Phantom Detection",
-    flag = "phantom_detection",
-    callback = function(value)
-        PhantomV2Detection = value 
-    end
-})
-
-AutoParryModule:create_checkbox({
-    title = "Pulse Detection",
-    flag = "pulse_detect",
-    callback = function(value)
-       end
-})
-
-AutoParryModule:create_checkbox({
-    title = "Death Slash Detection",
-    flag = "death_slash",
-    callback = function(value)
-     end
-})
-
-AutoParryModule:create_checkbox({
-    title = "Slashes Of Fury Detection",
-    flag = "slashes_of_fury",
-    callback = function(value)
-     end
 })
 
 AutoParryModule:create_checkbox({
@@ -1262,7 +1234,7 @@ AutoSpamModule:create_checkbox({
 
             local button = Instance.new("TextButton")
             button.Name = "ClashModeButton"
-            button.Text = "Start"
+            button.Text = "Started"
             button.Size = UDim2.new(0, 160, 0, 40)
             button.Position = UDim2.new(0.5, -80, 0.5, -20)
             button.BackgroundTransparency = 1
@@ -1276,7 +1248,7 @@ AutoSpamModule:create_checkbox({
 
             local function toggle()
                 activated = not activated
-                button.Text = activated and "Stop" or "Start"
+                button.Text = activated and "Stopped" or "Started"
                 if activated then
                     Connections_Manager['Manual Spam UI'] = game:GetService("RunService").Heartbeat:Connect(function()
                         Auto_Parry.Parry(Selected_Parry_Type)
@@ -1308,6 +1280,43 @@ AutoSpamModule:create_checkbox({
     flag = "notify3",
     callback = function(state)
      end
+})
+
+local Det1Module = DetTab:create_module({
+  title = "Global Phantom Detection",
+  flag = "det1",
+  description = "Anti Phantom",
+  section = "left",
+  callback = function(value)
+      PhantomV2Detection = value 
+    end
+})
+
+local Det2Module = DetTab:create_module({
+  title = "Global Pulse Detection",
+  flag = "det2",
+  description = "Anti Pulse",
+  section = "left",
+  callback = function(value)
+   end
+})
+
+local Det3Module = DetTab:create_module({
+  title = "Global Death Slash Detection",
+  flag = "det3",
+  description = "Anti Death Slash",
+  section = "left",
+  callback = function(value)
+   end
+})
+  
+  local Det4Module = DetTab:create_module({
+  title = "Global Slashes Of Fury Detection",
+  flag = "det4",
+  description = "Anti Slashes Of Fury",
+  section = "left",
+  callback = function(value)
+   end
 })
 
 local SpeedModule = PlayerTab:create_module({
@@ -2452,4 +2461,58 @@ LookatModule:create_dropdown({
 					EnableLookAt()  
 				end  
 			end  
+})
+
+local FpsModule = WorldTab:create_module({
+    title = "Boost FPS",
+    description = "Increase FPS",
+    section = "right",
+    flag = "fps_boost",
+    callback = function(state)
+        BoosterEnabled = state
+
+        if state then
+            local Lighting = game:GetService("Lighting")
+            Lighting.GlobalShadows = false
+            Lighting.FogEnd = 1e10
+            Lighting.Brightness = 0
+            Lighting.OutdoorAmbient = Color3.fromRGB(0, 0, 0)
+
+            for _, v in pairs(Lighting:GetChildren()) do
+                if v:IsA("PostEffect") then
+                    v.Enabled = false
+                end
+            end
+
+            local Terrain = workspace:FindFirstChildOfClass("Terrain")
+            if Terrain then
+                Terrain.WaterWaveSize = 0
+                Terrain.WaterWaveSpeed = 0
+                Terrain.WaterReflectance = 0
+                Terrain.WaterTransparency = 1
+            end
+
+            for _, v in pairs(workspace:GetDescendants()) do
+                if v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Beam") then
+                    v.Enabled = false
+                elseif v:IsA("Smoke") or v:IsA("Fire") then
+                    v.Enabled = false
+                elseif v:IsA("SpotLight") or v:IsA("PointLight") or v:IsA("SurfaceLight") then
+                    v.Enabled = false
+                elseif v:IsA("Decal") or v:IsA("Texture") then
+                    v.Transparency = 1
+                elseif v:IsA("BasePart") then
+                    v.Material = Enum.Material.SmoothPlastic
+                    v.Reflectance = 0
+                end
+            end
+
+            pcall(function()
+                settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+                settings().Rendering.MeshPartDetailLevel = Enum.MeshPartDetailLevel.Level02
+            end)
+
+            collectgarbage("count")
+        end
+    end
 })
